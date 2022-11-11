@@ -1,0 +1,52 @@
+version: '3'
+services:
+
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+    volumes:
+      - ./elastic_data:/var/lib/elasticsearch/data
+    env_file:
+      - elastic.env.sample
+    ports:
+      - 9200:9200
+
+  postgres_db:
+    env_file:
+      - pg_container.env
+    image: postgres:13
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+
+  service:
+    build:
+      context: src/
+    command: [ "python", "main.py" ]
+    depends_on:
+      - redis
+      - elastic
+    env_file:
+      - service.env.sample
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx_configs:/etc/nginx/conf.d:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - service
+
+  etl_service:
+    build:
+      context: src/etl/
+    command: ["python", "connector.py"]
+
+
