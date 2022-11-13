@@ -4,16 +4,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 dsl = {
-        'dbname': os.environ.get('PG_DB_NAME'),
-        'user': os.environ.get('PG_USER_NAME'),
-        'password': os.environ.get('PG_USER_PASSWORD'),
-        'host': os.environ.get('PG_HOST'),
-        'port': os.environ.get('PG_PORT'),
+        'dbname': os.environ.get('PG_DB_NAME', 'movies_database'),
+        'user': os.environ.get('PG_USER_NAME', 'app'),
+        'password': os.environ.get('PG_USER_PASSWORD', '123qwe'),
+        'host': os.environ.get('PG_HOST', 'postgres_db'),
+        'port': os.environ.get('PG_PORT', 5432),
         'options': '-c search_path=content'}
 
 SLEEP_TIME = 10
 BATCH_SIZE = 50
-ELK_BASE_URL = 'http://127.0.0.1:9200'
+ELK_BASE_URL = 'http://elastic:9200'
 
 
 filmwork_index_body = {
