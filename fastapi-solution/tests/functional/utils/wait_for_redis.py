@@ -1,11 +1,20 @@
-import time
+import asyncio
 
-import redis
+import aioredis
+
+from settings import test_settings
+
+
+redis_client = aioredis.from_url(f'redis://{test_settings.redis_host}')
+
+
+async def main():
+    while True:
+        response = await redis_client.execute_command('PING')
+        if response:
+            break
+        asyncio.sleep(1)    
 
 
 if __name__ == '__main__':
-    redis_client = redis.from_url('redis://redis:6379')
-    while True:
-        if redis_client.ping():
-            break
-        time.sleep(1)
+    asyncio.run(main())
