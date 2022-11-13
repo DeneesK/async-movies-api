@@ -13,7 +13,7 @@ async def main():
         response = await redis_client.execute_command('PING')
         if response:
             break
-        asyncio.sleep(1)    
+        await asyncio.sleep(1)    
 
 
 if __name__ == '__main__':
