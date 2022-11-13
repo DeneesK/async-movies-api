@@ -13,7 +13,7 @@ dsl = {
 
 SLEEP_TIME = 10
 BATCH_SIZE = 50
-ELK_BASE_URL = 'http://127.0.0.1:9200'
+ELK_BASE_URL = os.environ.get('ES_HOST')
 
 
 filmwork_index_body = {
