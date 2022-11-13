@@ -13,7 +13,7 @@ services:
       - pg_container.env
     image: postgres:13
     volumes:
-      - ./postgresql/data:/var/lib/postgresql/data/
+      - ./pg_data:/var/lib/postgresql/data
 
   redis:
     image: redis
@@ -42,5 +42,3 @@ services:
     build:
       context: src/etl/
     command: ["python", "connector.py"]
-
-
