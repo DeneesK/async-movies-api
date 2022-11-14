@@ -11,7 +11,8 @@ from pydantic import parse_obj_as
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
-from services.cache import Cache, RedisCache
+from services.cache import Cache
+from services.cache_redis import RedisCache
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
