@@ -1,6 +1,6 @@
 from elasticsearch import AsyncElasticsearch, NotFoundError
 
-from services.search import Search
+from db.search import Search
 
 
 class ElasticSearch(Search):

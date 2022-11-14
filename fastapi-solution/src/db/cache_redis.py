@@ -1,6 +1,6 @@
 from aioredis import Redis
 
-from services.cache import Cache
+from db.cache import Cache
 
 
 class RedisCache(Cache):

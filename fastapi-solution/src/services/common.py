@@ -1,6 +1,6 @@
 
-from services.cache import Cache
-from services.search import Search
+from db.cache import Cache
+from db.search import Search
 
 Key = str  # An id of search phrase, to look in the cache.
 

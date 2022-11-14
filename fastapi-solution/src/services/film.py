@@ -10,9 +10,9 @@ from pydantic import parse_obj_as
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
-from services.cache_redis import RedisCache
+from db.cache_redis import RedisCache
 from services.common import DBObjectService
-from services.search_elastic import ElasticSearch
+from db.search_elastic import ElasticSearch
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
@@ -45,14 +45,14 @@ class FilmService(DBObjectService):
         redis_key = hash((query, from_, page_size))
         films = await self._films_from_cache(redis_key)
         if not films:
-            films = await self._get_films_list_from_elastic(query, from_, page_size)
+            films = await self._search_films(query, from_, page_size)
             if not films:
                 films = []
             await self._put_films_to_cache(key=redis_key, films=films)
         return films
 
-    async def _get_films_list_from_elastic(self, query: str, from_:int=None,
-                                           page_size:int=None) -> list:
+    async def _search_films(self, query: str, from_:int=None,
+                            page_size:int=None) -> list:
         results = await self.search.search(query, from_, page_size)
         films = [Film(**r) for r in results]
         return films

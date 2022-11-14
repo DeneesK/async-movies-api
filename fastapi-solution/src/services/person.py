@@ -10,9 +10,9 @@ from pydantic import parse_obj_as
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.person import Person
-from services.cache_redis import RedisCache
+from db.cache_redis import RedisCache
 from services.common import DBObjectService, Key
-from services.search_elastic import ElasticSearch
+from db.search_elastic import ElasticSearch
 
 PERSON_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
@@ -21,14 +21,14 @@ class PersonService(DBObjectService):
     async def get_by_id(self, id_: Key) -> list[Person]:
         persons = await self._persons_from_cache(id_)
         if not persons:
-            persons = await self._get_persons_from_elastic(id_)
+            persons = await self._search_by_id(id_)
             if not persons:
                 return []
             await self._put_persons_to_cache(key=id_, persons=persons)
 
         return persons
 
-    async def _get_persons_from_elastic(self, id_: Key) -> list[Person]:
+    async def _search_by_id(self, id_: Key) -> list[Person]:
         try:
             doc = await self.search.get_by_id(id_)
         except NotFoundError:
@@ -48,18 +48,18 @@ class PersonService(DBObjectService):
         redis_key = hash((query, to_tuple(sort_fields), to_tuple(filter_items), from_, page_size))
         persons = await self._persons_from_cache(redis_key)
         if persons is None:
-            persons = await self._get_persons_list_from_elastic(query,
-                                                                from_, page_size,
-                                                                sort_fields, filter_items)
+            persons = await self._search_persons(query,
+                                                 from_, page_size,
+                                                 sort_fields, filter_items)
             await self._put_persons_to_cache(redis_key, persons)
         if not persons:
             return []
         return persons
 
-    async def _get_persons_list_from_elastic(self, query: str,
-                                             from_:int=None, page_size:int=None,
-                                             sort_fields:list|None=None,
-                                             filter_items:list|None=None) -> list[Person]:
+    async def _search_persons(self, query: str,
+                              from_:int=None, page_size:int=None,
+                              sort_fields:list|None=None,
+                              filter_items:list|None=None) -> list[Person]:
 
         results = await self.search.search(query, from_, page_size, sort_fields, filter_items)
         films = [Person(**r) for r in results]
