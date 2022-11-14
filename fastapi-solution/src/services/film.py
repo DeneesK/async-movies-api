@@ -1,6 +1,5 @@
 import json
 from functools import lru_cache
-from copy import deepcopy
 from typing import Optional, Hashable
 
 from aioredis import Redis
@@ -13,6 +12,8 @@ from db.redis import get_redis
 from models.film import Film
 from services.cache import Cache
 from services.cache_redis import RedisCache
+from services.search import Search
+from services.search_elastic import ElasticSearch
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
@@ -21,27 +22,25 @@ FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 # Никакой магии тут нет. Обычный класс с обычными методами. 
 # Этот класс ничего не знает про DI — максимально сильный и независимый.
 class FilmService:
-    _template = { "query": 
-        { "query_string": 
-            { "query": None } } }
+
     
-    def __init__(self, cache: Cache, elastic: AsyncElasticsearch):
+    def __init__(self, cache: Cache, search: Search):
         self.cache = cache
-        self.elastic = elastic
+        self.search = search
 
     async def get_by_id(self, film_id: str) -> Optional[Film]:
         film = await self._films_from_cache(film_id)
         if not film:
-            film = await self._get_film_from_elastic(film_id)
+            film = await self._find_film(film_id)
             if not film:
                 return None
             await self._put_films_to_cache(key=film.id, films=film)
 
         return film
 
-    async def _get_film_from_elastic(self, film_id: str) -> Optional[Film]:
+    async def _find_film(self, film_id: str) -> Optional[Film]:
         try:
-            doc = await self.elastic.get('movies', film_id)
+            doc = await self.search.get_by_id(film_id)
         except NotFoundError:
             return None
         return Film(**doc['_source'])
@@ -61,18 +60,8 @@ class FilmService:
 
     async def _get_films_list_from_elastic(self, query: str, from_:int=None,
                                            page_size:int=None) -> list:
-        body = deepcopy(self._template)
-        # noinspection PyTypedDict
-        body['query']['query_string']['query'] = query
-        if from_ is not None:
-            body['from'] = from_
-        if page_size is not None:
-            body['size'] = page_size
-        try:
-            result = await self.elastic.search(index='movies', body=body)
-        except NotFoundError:
-            return []
-        films = [Film(**f['_source']) for f in result['hits']['hits']]
+        results = await self.search.search(query, from_, page_size)
+        films = [Film(**r) for r in results]
         return films
 
     async def _films_from_cache(self, key: Hashable) -> Optional[Film] | list:
@@ -105,4 +94,5 @@ def get_film_service(
         elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> FilmService:
     cache = RedisCache(redis)
-    return FilmService(cache, elastic)
+    search = ElasticSearch(elastic, 'movies')
+    return FilmService(cache, search)
