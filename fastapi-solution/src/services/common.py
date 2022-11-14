@@ -1,5 +1,6 @@
-from aioredis import Redis
-from elasticsearch import AsyncElasticsearch
+
+from services.cache import Cache
+from services.search import Search
 
 Key = str  # An id of search phrase, to look in the cache.
 
@@ -10,6 +11,6 @@ class DBObjectService:
         { "query_string":
             { "query": None } } }
 
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        self.redis = redis
-        self.elastic = elastic
+    def __init__(self, cache: Cache, search: Search):
+        self.cache = cache
+        self.search = search

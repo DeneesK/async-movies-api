@@ -10,25 +10,27 @@ from pydantic import parse_obj_as
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.person import Person
+from services.cache_redis import RedisCache
 from services.common import DBObjectService, Key
+from services.search_elastic import ElasticSearch
 
 PERSON_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
 
 class PersonService(DBObjectService):
-    async def get_by_id(self, search_string: Key) -> list[Person]:
-        persons = await self._persons_from_cache(search_string)
+    async def get_by_id(self, id_: Key) -> list[Person]:
+        persons = await self._persons_from_cache(id_)
         if not persons:
-            persons = await self._get_persons_from_elastic(search_string)
+            persons = await self._get_persons_from_elastic(id_)
             if not persons:
                 return []
-            await self._put_persons_to_cache(key=search_string, persons=persons)
+            await self._put_persons_to_cache(key=id_, persons=persons)
 
         return persons
 
-    async def _get_persons_from_elastic(self, search_string: Key) -> list[Person]:
+    async def _get_persons_from_elastic(self, id_: Key) -> list[Person]:
         try:
-            doc = await self.elastic.get('persons', search_string)
+            doc = await self.search.get_by_id(id_)
         except NotFoundError:
             return []
         result = Person(**doc['_source'])
@@ -58,27 +60,14 @@ class PersonService(DBObjectService):
                                              from_:int=None, page_size:int=None,
                                              sort_fields:list|None=None,
                                              filter_items:list|None=None) -> list[Person]:
-        body = {"query": {'bool': {'must': {"match": {"name": {"query": query}}}}},
-                # an example: "sort": [{'name.raw': 'asc'}]
-                }
-        if sort_fields:
-            body["sort"] = [{sort_field: 'asc'} for sort_field in sort_fields]
-        if filter_items:
-            body["query"]["bool"]["filter"] = [{'term': {"name": filter_item}} for filter_item in filter_items]
-        if from_:
-            body['from'] = from_
-        if page_size:
-            body['size'] = page_size
-        try:
-            result = await self.elastic.search(index='persons', body=body)
-        except NotFoundError:
-            return []  # None?
-        films = [Person(**f['_source']) for f in result['hits']['hits']]
+
+        results = await self.search.search(query, from_, page_size, sort_fields, filter_items)
+        films = [Person(**r) for r in results]
         return films
 
     async def _persons_from_cache(self, key : Hashable) -> list[Person]|None:
         """None - значит, нет данных в кеше, пустой список - это валидное содержимое."""
-        data = await self.redis.get(key)
+        data = await self.cache.get(key)
         if data is None:
             return None
 
@@ -92,7 +81,7 @@ class PersonService(DBObjectService):
 
         assert isinstance(persons, list)
         persons_dict = [person.json() for person in persons]
-        await self.redis.set(key, json.dumps(persons_dict), ex=PERSON_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache.set(key, json.dumps(persons_dict), expire=PERSON_CACHE_EXPIRE_IN_SECONDS)
 
 
 @lru_cache()
@@ -100,4 +89,6 @@ def get_person_service(
         redis: Redis = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> PersonService:
-    return PersonService(redis, elastic)
+    cache = RedisCache(redis)
+    search = ElasticSearch(elastic, 'persons')
+    return PersonService(cache, search)

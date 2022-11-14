@@ -10,9 +10,8 @@ from pydantic import parse_obj_as
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
-from services.cache import Cache
 from services.cache_redis import RedisCache
-from services.search import Search
+from services.common import DBObjectService
 from services.search_elastic import ElasticSearch
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
@@ -21,13 +20,7 @@ FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 # FilmService содержит бизнес-логику по работе с фильмами. 
 # Никакой магии тут нет. Обычный класс с обычными методами. 
 # Этот класс ничего не знает про DI — максимально сильный и независимый.
-class FilmService:
-
-    
-    def __init__(self, cache: Cache, search: Search):
-        self.cache = cache
-        self.search = search
-
+class FilmService(DBObjectService):
     async def get_by_id(self, film_id: str) -> Optional[Film]:
         film = await self._films_from_cache(film_id)
         if not film:

@@ -10,25 +10,27 @@ from pydantic import parse_obj_as
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.genre import Genre
+from services.cache_redis import RedisCache
 from services.common import DBObjectService, Key
+from services.search_elastic import ElasticSearch
 
 GENRE_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
 
 class GenreService(DBObjectService):
-    async def get_by_id(self, search_string: Key) -> list[Genre]:
-        genres = await self._genres_from_cache(search_string)
+    async def get_by_id(self, id_: Key) -> list[Genre]:
+        genres = await self._genres_from_cache(id_)
         if not genres:
-            genres = await self._get_genres_from_elastic(search_string)
+            genres = await self._get_genres_from_elastic(id_)
             if not genres:
                 return []
-            await self._put_genres_to_cache(key=search_string, genres=genres)
+            await self._put_genres_to_cache(key=id_, genres=genres)
 
         return genres
 
-    async def _get_genres_from_elastic(self, search_string: Key) -> list[Genre]:
+    async def _get_genres_from_elastic(self, id_: Key) -> list[Genre]:
         try:
-            doc = await self.elastic.get('genres', search_string)
+            doc = await self.search.get_by_id(id_)
         except NotFoundError:
             return []
         result = Genre(**doc['_source'])
@@ -59,25 +61,15 @@ class GenreService(DBObjectService):
                                             sort_fields:list|None=None,
                                             filter_items: list | None = None
                                             ) -> list[Genre]:
-        body={"query": {'bool': {'must': {"match": {"name": {"query": query}}}}}}
-        if sort_fields:
-            body["sort"] = [{sort_field: 'asc'} for sort_field in sort_fields]
-        if filter_items:
-            body["query"]["bool"]["filter"] = [{'term': {"name": filter_item}} for filter_item in filter_items]
-        if from_:
-            body['from'] = from_
-        if page_size:
-            body['size'] = page_size
-        try:
-            result = await self.elastic.search(index='genres', body=body)
-        except NotFoundError:
-            return []
-        films = [Genre(**f['_source']) for f in result['hits']['hits']]
+
+        results = await self.search.search(query, from_, page_size, sort_fields, filter_items)
+
+        films = [Genre(**r) for r in results]
         return films
 
     async def _genres_from_cache(self, key : Hashable) -> list[Genre]|None:
         """None - значит, нет данных, пустой список - валидное содержимое."""
-        data = await self.redis.get(key)
+        data = await self.cache.get(key)
         if data is None:
             return None
 
@@ -91,7 +83,7 @@ class GenreService(DBObjectService):
 
         assert isinstance(genres, list)
         genres_dict = [genre.json() for genre in genres]
-        await self.redis.set(key, json.dumps(genres_dict), ex=GENRE_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache.set(key, json.dumps(genres_dict), expire=GENRE_CACHE_EXPIRE_IN_SECONDS)
 
 
 @lru_cache()
@@ -99,4 +91,6 @@ def get_genre_service(
         redis: Redis = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> GenreService:
-    return GenreService(redis, elastic)
+    cache = RedisCache(redis)
+    search = ElasticSearch(elastic, 'genres')
+    return GenreService(cache, search)
