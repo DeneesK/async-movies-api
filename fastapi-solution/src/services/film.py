@@ -11,6 +11,7 @@ from pydantic import parse_obj_as
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
+from services.cache import Cache, RedisCache
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
@@ -23,8 +24,8 @@ class FilmService:
         { "query_string": 
             { "query": None } } }
     
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        self.redis = redis
+    def __init__(self, cache: Cache, elastic: AsyncElasticsearch):
+        self.cache = cache
         self.elastic = elastic
 
     async def get_by_id(self, film_id: str) -> Optional[Film]:
@@ -74,7 +75,8 @@ class FilmService:
         return films
 
     async def _films_from_cache(self, key: Hashable) -> Optional[Film] | list:
-        data = await self.redis.get(key)
+        # noinspection PyTypeChecker
+        data = await self.cache.get(key)
         if not data:
             return None
 
@@ -90,13 +92,16 @@ class FilmService:
     async def _put_films_to_cache(self, key: Hashable, films: Film | list):
         if isinstance(films, list):
             films = [f.json() for f in films if f]
-            await self.redis.set(key, json.dumps(films), ex=FILM_CACHE_EXPIRE_IN_SECONDS)
+            # noinspection PyTypeChecker
+            await self.cache.set(key, json.dumps(films), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
         else:    
-            await self.redis.set(key, films.json(), ex=FILM_CACHE_EXPIRE_IN_SECONDS)
+            # noinspection PyTypeChecker
+            await self.cache.set(key, films.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
 @lru_cache()
 def get_film_service(
         redis: Redis = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> FilmService:
-    return FilmService(redis, elastic)
+    cache = RedisCache(redis)
+    return FilmService(cache, elastic)
