@@ -1,6 +1,4 @@
 import json
-import datetime
-import uuid
 
 import pytest
 from elasticsearch import AsyncElasticsearch
