@@ -11,6 +11,8 @@ class TestSettings(BaseSettings):
 
     redis_host: str = Field(os.environ.get('REDIS_HOST'))
     service_host: str = Field(os.environ.get('SERVICE_HOST'))
- 
+    @property
+    def service_url(self):
+        return f'http://{self.service_host}:8000'
 
 test_settings = TestSettings()

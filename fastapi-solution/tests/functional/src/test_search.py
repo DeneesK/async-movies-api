@@ -21,7 +21,7 @@ from ..settings import test_settings
         ),
         (
                 {'query': 'Mashed potato', 'page_size': 50},
-                {'status': 404, 'length': 1}
+                {'status': 200, 'length': 1}
         )
     ]
 )
