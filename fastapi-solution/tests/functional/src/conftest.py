@@ -37,6 +37,17 @@ def get_es_films_bulk_query(query_data, es_index, es_id_field, items_count):
     return make_bulk_query(es_data, es_index, es_id_field)
 
 
+def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count):
+    # 1. Генерируем данные для ES
+    es_data = [{
+        'id': str(uuid.uuid4()),
+        'name': query_data['search'],
+        'created_at': datetime.datetime.now().isoformat(),
+        'updated_at': datetime.datetime.now().isoformat(),
+    } for _ in range(items_count)]
+    return make_bulk_query(es_data, es_index, es_id_field)
+
+
 def make_bulk_query(es_data, es_index, es_id_field):
     bulk_query = []
     for row in es_data:
