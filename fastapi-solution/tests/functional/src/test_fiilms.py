@@ -8,27 +8,27 @@ from ..settings import test_settings
 
 
 @pytest.mark.parametrize(
-    'query_data, expected_answer',
+    'checking_id, expected_answer',
     [
         (
-                {'query': 'The Star', 'page_size': 50},
-                {'status': 200, 'length': 50}
+                '7e0ad51a-332f-4ff0-b8b9-9b5308836cb1',
+                {'status': 200, 'result': 'The Star'}
         ),
         (
-                {'query': 'Mashed potato', 'page_size': 50},
-                {'status': 404, 'length': 1}
+                '1111111111',
+                {'status': 404, 'result': 'film not found'}
         )
     ]
 )
 
 
 @pytest.mark.asyncio
-async def test_search(es_write_data, query_data, expected_answer):  
+async def test_film(es_write_data, checking_id, expected_answer):
 
     # 1. Генерируем данные для ES
 
     es_data = [{
-        'id': str(uuid.uuid4()),
+        'id': '7e0ad51a-332f-4ff0-b8b9-9b5308836cb1',
         'imdb_rating': 8.5,
         'genre': ['Action', 'Sci-Fi'],
         'title': 'The Star',
@@ -47,7 +47,7 @@ async def test_search(es_write_data, query_data, expected_answer):
         'created_at': datetime.datetime.now().isoformat(),
         'updated_at': datetime.datetime.now().isoformat(),
         'film_work_type': 'movie'
-    } for _ in range(60)]
+    }]
  
     # 1.1 Записываем данные в ES
 
@@ -56,15 +56,18 @@ async def test_search(es_write_data, query_data, expected_answer):
     # 2. Запрашиваем данные из ES по API
 
     session = aiohttp.ClientSession()
-    url = f'http://{test_settings.service_host}:8000/api/v1/films/search'
-    async with session.get(url, params=query_data) as response:
+    url = f'http://{test_settings.service_host}:8000/api/v1/films/film/{checking_id}'
+    async with session.get(url) as response:
         body = await response.json()
         headers = response.headers
         status = response.status
-        length = len(body)
+        result = body.get('title', 'film not found')
     await session.close()
 
     # 2. Проверяем ответ 
 
     assert status == expected_answer['status']
-    assert length == expected_answer['length']
+    assert result == expected_answer['result']
+    
+        
+    
