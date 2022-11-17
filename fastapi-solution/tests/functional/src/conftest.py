@@ -102,8 +102,7 @@ def make_get_request(aiohttp_client_session):
         url = test_settings.service_url + url_start
         page_size = expected_answer['length']
         assert page_size <= items_count
-        # query_data = {'search': 'The Star'}  # the original option
-        query_data1 = {'query': query_data['search'], 'page_size': page_size}
+        query_data1 = {'query': query_data["search"], 'page_size': page_size}
         async with aiohttp_client_session.get(url, params=query_data1) as response:
             body = await response.json()
             headers = response.headers

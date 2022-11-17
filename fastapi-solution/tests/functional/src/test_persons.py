@@ -19,11 +19,11 @@ from functional.src.conftest import get_es_persons_bulk_query
         ),
         (
                 {'search': 'William Shakespear'},
-                {'status': 404, 'length': 1}  # 1 - because one item with "not found"
+                {'status': 200, 'length': 1}  # 1 - because one item with "not found"
         )
     ]
 )
-@pytest.mark.parametrize('es_write_data', [get_es_persons_bulk_query], indirect=True)
+# @pytest.mark.parametrize('es_write_data', [get_es_persons_bulk_query], indirect=True)
 @pytest.mark.asyncio
 async def test_search(es_write_data, make_get_request, query_data, expected_answer):
     items_count = 60
