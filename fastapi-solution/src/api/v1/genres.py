@@ -35,8 +35,13 @@ async def genre_details(genre_id: str, genre_service: GenreService = Depends(get
     return Genre(**person.dict())
 
 
-@router.get('/search/{query}', response_model=list[Genre])
-async def genres_list(query: str,
+@router.get('/search/', response_model=list[Genre],
+            description='''Get a list persons that match query. Example:
+            http://127.0.0.1:8000/api/v1/genres/search/?query=Action?sort=name.raw&sort=...
+            http://127.0.0.1:8000/api/v1/genres/search/?query=Action?filter=Po Chien Chin&filter=...
+            '''
+            )
+async def genres_list(query: str | None = Query(default=None),
                       sort:list[str]=Query(default=None),
                       filter:list[str]=Query(default=None),
                       from_:int=None, page_size:int=None,
