@@ -20,6 +20,7 @@ class Person(BaseModel):
 # В сигнатуре функции указываем тип данных, получаемый из адреса запроса (person_id: str)
 # И указываем тип возвращаемого объекта — Person
 
+
 # Внедряем FilmService с помощью Depends(get_film_service)
 @router.get('/person/{person_id}', response_model=Person)
 async def person_details(person_id: str, person_service: PersonService = Depends(get_person_service)) -> Person:
