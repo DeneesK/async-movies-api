@@ -21,7 +21,11 @@ class Genre(BaseModel):
 # И указываем тип возвращаемого объекта — Genre
 
 # Внедряем GenreService с помощью Depends(get_genre_service)
-@router.get('/genre/{genre_id}', response_model=Genre)
+@router.get('/genre/{genre_id}', response_model=Genre,
+            description='Get a list genres that match id',
+            summary="Genres Search by query",
+            response_description="Id, name and description"            
+            )
 async def genre_details(genre_id: str, genre_service: GenreService = Depends(get_genre_service)) -> Genre:
     genre_lst = await genre_service.get_by_id(genre_id)
     if not genre_lst:
@@ -35,8 +39,15 @@ async def genre_details(genre_id: str, genre_service: GenreService = Depends(get
     return Genre(**person.dict())
 
 
-@router.get('/search/{query}', response_model=list[Genre])
-async def genres_list(query: str,
+@router.get('/search/', response_model=list[Genre],
+            description='''Get a list genres that match query. Example:
+            http://127.0.0.1:8000/api/v1/genres/search/?query=Action?sort=name.raw&sort=...
+            http://127.0.0.1:8000/api/v1/genres/search/?query=Action?filter=Po Chien Chin&filter=...
+            ''',
+            summary="Genres Search by query",
+            response_description="Id, name and description"
+            )
+async def genres_list(query: str | None = Query(default=None),
                       sort:list[str]=Query(default=None),
                       filter:list[str]=Query(default=None),
                       from_:int=None, page_size:int=None,
