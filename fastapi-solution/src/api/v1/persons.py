@@ -35,8 +35,13 @@ async def person_details(person_id: str, person_service: PersonService = Depends
     return Person(**person.dict())
 
 
-@router.get('/search/{query}', response_model=list[Person])
-async def persons_list(query: str,
+@router.get('/search/', response_model=list[Person],
+            description='''Get a list persons that match query. Example:
+                        http://127.0.0.1:8000/api/v1/persons/search/?query=William%20Po?sort=name.raw&sort=...
+                        http://127.0.0.1:8000/api/v1/persons/search/?query=William%20Po?filter=Po Chien Chin&filter=...
+                        '''
+            )
+async def persons_list(query: str | None = Query(default=None),
                        sort:list[str]=Query(default=None),
                        filter:list[str]=Query(default=None),
                        from_:int=None, page_size=None,
