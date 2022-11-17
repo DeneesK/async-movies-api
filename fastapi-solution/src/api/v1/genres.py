@@ -28,7 +28,7 @@ async def genre_details(genre_id: str, genre_service: GenreService = Depends(get
         # Если жанр не найден, отдаём 404 статус
         # Желательно пользоваться уже определёнными HTTP-статусами, которые содержат enum
                 # Такой код будет более поддерживаемым
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='genre not found')
     else:
         # We ised id, so there is only one item.
         person = genre_lst[0]

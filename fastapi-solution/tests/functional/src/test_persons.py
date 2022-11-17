@@ -1,5 +1,7 @@
 import json
 import pytest
+import uuid
+import datetime
 
 # from elasticsearch import AsyncElasticsearch
 
@@ -7,8 +9,18 @@ from functional.settings import test_settings
 
 #  Название теста должно начинаться со слова `test_`
 #  Любой тест с асинхронными вызовами нужно оборачивать декоратором `pytest.mark.asyncio`, который следит за запуском и работой цикла событий.
-from functional.src.conftest import get_es_persons_bulk_query
+from functional.src.common import make_bulk_query
 
+
+def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count):
+    # 1. Генерируем данные для ES
+    es_data = [{
+        'id': str(uuid.uuid4()),
+        'name': query_data['search'],
+        'created_at': datetime.datetime.now().isoformat(),
+        'updated_at': datetime.datetime.now().isoformat(),
+    } for _ in range(items_count)]
+    return make_bulk_query(es_data, es_index, es_id_field)
 
 @pytest.mark.parametrize(
     'query_data, expected_answer',
@@ -29,7 +41,7 @@ async def test_search(es_write_data, make_get_request, query_data, expected_answ
     items_count = 60
     bulk_query = get_es_persons_bulk_query(query_data, test_settings.es_index, test_settings.es_id_field, items_count)
 
-    es_write_data(bulk_query, items_count, 'persons')
+    await es_write_data(bulk_query, items_count, 'persons')
     # 3. Запрашиваем данные из ES по API
 
     page_size = expected_answer['length']
@@ -51,17 +63,17 @@ async def test_search(es_write_data, make_get_request, query_data, expected_answ
     ]
 )
 @pytest.mark.asyncio
-async def test_by_id(es_write_data, make_get_request, query_data, expected_answer):
+async def test_by_id(es_write_data, make_id_request, query_data, expected_answer):
     items_count = 1
     bulk_query = get_es_persons_bulk_query(query_data, test_settings.es_index, test_settings.es_id_field, items_count)
     person_id = json.loads(bulk_query[0])['index']['_id']
-    es_write_data(bulk_query, items_count, 'persons')
+    print(f'got person id {person_id}')
+    await es_write_data(bulk_query, items_count, 'persons')
     # 3. Запрашиваем данные из ES по API
 
     page_size = expected_answer['length']
-    getting_query_data = {}
     # to replace with:
-    status, body, headers = await make_get_request(f'/api/v1/persons/person/{person_id}', getting_query_data, expected_answer, items_count)
+    status, body, headers = await make_id_request(f'/api/v1/persons/person/{person_id}')
 
     # 4. Проверяем ответ
 
