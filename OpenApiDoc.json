@@ -1,0 +1,518 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Read-only API for online cinema",
+    "description": "Information about films, genres and people involved in the creation of the work",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/films/film/{film_id}": {
+      "get": {
+        "tags": [
+          "films"
+        ],
+        "summary": "Film Search by id",
+        "description": "Getting a movie by its id",
+        "operationId": "film_details_api_v1_films_film__film_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Film Id",
+              "type": "string"
+            },
+            "name": "film_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Title, film rating, genre, description and staff working on the film",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Film"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/films/search/": {
+      "get": {
+        "tags": [
+          "films"
+        ],
+        "summary": "Films Search by query",
+        "description": "Get a list movies that match query",
+        "operationId": "films_list_api_v1_films_search__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Query",
+              "type": "string"
+            },
+            "name": "query",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "From ",
+              "type": "integer"
+            },
+            "name": "from_",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page Size"
+            },
+            "name": "page_size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Title, film rating, genre, description and staff working on the film",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Films List Api V1 Films Search  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Film"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/persons/person/{person_id}": {
+      "get": {
+        "tags": [
+          "persons"
+        ],
+        "summary": "Persons Search by id",
+        "description": "Get a list persons that match id",
+        "operationId": "person_details_api_v1_persons_person__person_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Person Id",
+              "type": "string"
+            },
+            "name": "person_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Id and name",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Person"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/persons/search/": {
+      "get": {
+        "tags": [
+          "persons"
+        ],
+        "summary": "Persons Search by query",
+        "description": "Get a list persons that match query. Example:\n                        http://127.0.0.1:8000/api/v1/persons/search/?query=William%20Po?sort=name.raw&sort=...\n                        http://127.0.0.1:8000/api/v1/persons/search/?query=William%20Po?filter=Po Chien Chin&filter=...",
+        "operationId": "persons_list_api_v1_persons_search__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Query",
+              "type": "string"
+            },
+            "name": "query",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Sort",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Filter",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "name": "filter",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "From ",
+              "type": "integer"
+            },
+            "name": "from_",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page Size"
+            },
+            "name": "page_size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Id and name",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Persons List Api V1 Persons Search  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Person"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/genres/genre/{genre_id}": {
+      "get": {
+        "tags": [
+          "genres"
+        ],
+        "summary": "Genres Search by query",
+        "description": "Get a list genres that match id",
+        "operationId": "genre_details_api_v1_genres_genre__genre_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Genre Id",
+              "type": "string"
+            },
+            "name": "genre_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Id, name and description",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Genre"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/genres/search/": {
+      "get": {
+        "tags": [
+          "genres"
+        ],
+        "summary": "Genres Search by query",
+        "description": "Get a list genres that match query. Example:\n            http://127.0.0.1:8000/api/v1/genres/search/?query=Action?sort=name.raw&sort=...\n            http://127.0.0.1:8000/api/v1/genres/search/?query=Action?filter=Po Chien Chin&filter=...",
+        "operationId": "genres_list_api_v1_genres_search__get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Query",
+              "type": "string"
+            },
+            "name": "query",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Sort",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Filter",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "name": "filter",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "From ",
+              "type": "integer"
+            },
+            "name": "from_",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page Size",
+              "type": "integer"
+            },
+            "name": "page_size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Id, name and description",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Genres List Api V1 Genres Search  Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Genre"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Film": {
+        "title": "Film",
+        "required": [
+          "id",
+          "title",
+          "imdb_rating"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "imdb_rating": {
+            "title": "Imdb Rating",
+            "type": "number"
+          },
+          "genre": {
+            "title": "Genre",
+            "type": "array",
+            "items": {}
+          },
+          "director": {
+            "title": "Director",
+            "type": "array",
+            "items": {}
+          },
+          "actors": {
+            "title": "Actors",
+            "type": "array",
+            "items": {}
+          },
+          "writers": {
+            "title": "Writers",
+            "type": "array",
+            "items": {}
+          }
+        }
+      },
+      "Genre": {
+        "title": "Genre",
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          }
+        }
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "Person": {
+        "title": "Person",
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        }
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "title": "Location",
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

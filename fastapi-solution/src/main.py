@@ -12,7 +12,9 @@ from core.logger import LOGGING
 from db import elastic, redis
 
 app = FastAPI(
-    title=config.PROJECT_NAME,
+    title="Read-only API for online cinema",
+    description="Information about films, genres and people involved in the creation of the work",
+    version="1.0.0",
     docs_url='/api/openapi',
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,

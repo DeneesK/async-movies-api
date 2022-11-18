@@ -59,7 +59,6 @@ async def test_search(es_write_data, query_data, expected_answer):
     url = f'http://{test_settings.service_host}:8000/api/v1/films/search'
     async with session.get(url, params=query_data) as response:
         body = await response.json()
-        headers = response.headers
         status = response.status
         length = len(body)
     await session.close()
