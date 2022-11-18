@@ -39,7 +39,7 @@ def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count):
 @pytest.mark.asyncio
 async def test_search(es_write_data, make_search_request, query_data, expected_answer):
     items_count = 60
-    bulk_query = get_es_persons_bulk_query(query_data, test_settings.es_index, test_settings.es_id_field, items_count)
+    bulk_query = get_es_persons_bulk_query(query_data, 'persons', test_settings.es_id_field, items_count)
 
     await es_write_data(bulk_query)  # , items_count, 'persons'
     # 3. Запрашиваем данные из ES по API
