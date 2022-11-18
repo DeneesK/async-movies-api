@@ -43,7 +43,7 @@ async def test_search(es_write_data, make_search_request, query_data, expected_a
     items_count = 60
     bulk_query = get_es_persons_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
 
-    await es_write_data(bulk_query)  # , items_count, 'persons'
+    await es_write_data(bulk_query)
     # 3. Запрашиваем данные из ES по API
 
     page_size = expected_answer['length']
@@ -61,7 +61,7 @@ async def test_search(es_write_data, make_search_request, query_data, expected_a
     [
         (
                 {'search': 'John Smith'},
-                {'status': 200, 'length': 2}  # 2 because there are 2 items, 'id' and 'name'
+                {'status': 200, 'length': 2}
         )
     ]
 )
@@ -71,7 +71,7 @@ async def test_by_id(es_write_data, make_id_request, query_data, expected_answer
     bulk_query = get_es_persons_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
     person_id = json.loads(bulk_query[0])['index']['_id']
     print(f'got person id {person_id}')
-    await es_write_data(bulk_query)  # , items_count, 'persons'
+    await es_write_data(bulk_query)
     # 3. Запрашиваем данные из ES по API
 
     page_size = expected_answer['length']
