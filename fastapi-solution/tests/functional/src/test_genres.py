@@ -11,14 +11,15 @@ from functional.settings import test_settings
 #  Любой тест с асинхронными вызовами нужно оборачивать декоратором `pytest.mark.asyncio`, который следит за запуском и работой цикла событий.
 from functional.src.common import make_bulk_query
 
-ES_INDEX = 'persons'
+ES_INDEX = 'genres'
 
 
-def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count):
+def get_es_genres_bulk_query(query_data, es_index, es_id_field, items_count):
     # 1. Генерируем данные для ES
     es_data = [{
         'id': str(uuid.uuid4()),
         'name': query_data['search'],
+        'description': 'some random text',
         'created_at': datetime.datetime.now().isoformat(),
         'updated_at': datetime.datetime.now().isoformat(),
     } for _ in range(items_count)]
@@ -28,11 +29,11 @@ def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count):
     'query_data, expected_answer',
     [
         (
-                {'search': 'John Smith'},
+                {'search': 'Comedy'},
                 {'status': 200, 'length': 50}
         ),
         (
-                {'search': 'William Shakespear'},
+                {'search': 'Tragedy'},
                 {'status': 200, 'length': 1}  # 1 - because one item with "not found"
         )
     ]
@@ -41,7 +42,7 @@ def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count):
 @pytest.mark.asyncio
 async def test_search(es_write_data, make_search_request, query_data, expected_answer):
     items_count = 60
-    bulk_query = get_es_persons_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
+    bulk_query = get_es_genres_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
 
     await es_write_data(bulk_query)  # , items_count, 'persons'
     # 3. Запрашиваем данные из ES по API
@@ -60,7 +61,7 @@ async def test_search(es_write_data, make_search_request, query_data, expected_a
     'query_data, expected_answer',
     [
         (
-                {'search': 'John Smith'},
+                {'search': 'Super Action'},
                 {'status': 200, 'length': 2}  # 2 because there are 2 items, 'id' and 'name'
         )
     ]
@@ -68,7 +69,7 @@ async def test_search(es_write_data, make_search_request, query_data, expected_a
 @pytest.mark.asyncio
 async def test_by_id(es_write_data, make_id_request, query_data, expected_answer):
     items_count = 1
-    bulk_query = get_es_persons_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
+    bulk_query = get_es_genres_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
     person_id = json.loads(bulk_query[0])['index']['_id']
     print(f'got person id {person_id}')
     await es_write_data(bulk_query)  # , items_count, 'persons'
