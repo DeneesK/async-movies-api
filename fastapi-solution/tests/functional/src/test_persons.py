@@ -11,6 +11,8 @@ from functional.settings import test_settings
 #  Любой тест с асинхронными вызовами нужно оборачивать декоратором `pytest.mark.asyncio`, который следит за запуском и работой цикла событий.
 from functional.src.common import make_bulk_query
 
+ES_INDEX = 'persons'
+
 
 def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count):
     # 1. Генерируем данные для ES
@@ -39,7 +41,7 @@ def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count):
 @pytest.mark.asyncio
 async def test_search(es_write_data, make_search_request, query_data, expected_answer):
     items_count = 60
-    bulk_query = get_es_persons_bulk_query(query_data, 'persons', test_settings.es_id_field, items_count)
+    bulk_query = get_es_persons_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
 
     await es_write_data(bulk_query)  # , items_count, 'persons'
     # 3. Запрашиваем данные из ES по API
@@ -53,22 +55,23 @@ async def test_search(es_write_data, make_search_request, query_data, expected_a
     assert status == expected_answer['status']
     assert len(body) == page_size
 
+
 @pytest.mark.parametrize(
     'query_data, expected_answer',
     [
         (
                 {'search': 'John Smith'},
-                {'status': 200, 'length': 1}
+                {'status': 200, 'length': 2}  # 2 because 2 items, 'id' and 'name'
         )
     ]
 )
 @pytest.mark.asyncio
 async def test_by_id(es_write_data, make_id_request, query_data, expected_answer):
     items_count = 1
-    bulk_query = get_es_persons_bulk_query(query_data, test_settings.es_index, test_settings.es_id_field, items_count)
+    bulk_query = get_es_persons_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
     person_id = json.loads(bulk_query[0])['index']['_id']
     print(f'got person id {person_id}')
-    await es_write_data(bulk_query, items_count, 'persons')
+    await es_write_data(bulk_query)  # , items_count, 'persons'
     # 3. Запрашиваем данные из ES по API
 
     page_size = expected_answer['length']

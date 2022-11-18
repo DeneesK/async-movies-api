@@ -65,3 +65,18 @@ def make_search_request(aiohttp_client_session):
         # await aiohttp_client_session.close()
         return status, body, headers
     return inner
+
+@pytest_asyncio.fixture
+def make_id_request(aiohttp_client_session):
+    async def inner(url_start):
+        """url start is the beginning of url, like '/api/v1/films/search'."""
+        # aiohttp_client_session = aiohttp.ClientSession()
+        url = test_settings.service_url + url_start
+        query_data1 = {}
+        async with aiohttp_client_session.get(url, params=query_data1) as response:
+            body = await response.json()
+            headers = response.headers
+            status = response.status
+        # await aiohttp_client_session.close()
+        return status, body, headers
+    return inner
