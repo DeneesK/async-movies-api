@@ -2,6 +2,7 @@ import json
 
 import pytest
 import pytest_asyncio
+import aiohttp
 from elasticsearch import AsyncElasticsearch
 
 from .settings import test_settings
@@ -38,4 +39,29 @@ def es_write_data(es_client):
         if response['errors']:
             raise Exception('Ошибка записи данных в Elasticsearch')
 
+    return inner
+
+
+@pytest_asyncio.fixture# (scope='session') session - doesn't work, ScopeMismatch: You tried to access the function scoped fixture event_loop with a session scoped request object, involved factories:
+async def aiohttp_client_session():
+    session = aiohttp.ClientSession()
+    yield session
+    await session.close()
+
+
+@pytest_asyncio.fixture
+def make_search_request(aiohttp_client_session):
+    async def inner(url_start, query_data, expected_answer, items_count):
+        """url start is the beginning of url, like '/api/v1/films/search'."""
+        # aiohttp_client_session = aiohttp.ClientSession()
+        url = test_settings.service_url + url_start
+        page_size = expected_answer['length']
+        assert page_size <= items_count
+        query_data1 = {'query': query_data["search"], 'page_size': page_size}
+        async with aiohttp_client_session.get(url, params=query_data1) as response:
+            body = await response.json()
+            headers = response.headers
+            status = response.status
+        # await aiohttp_client_session.close()
+        return status, body, headers
     return inner
