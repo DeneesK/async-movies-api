@@ -1,12 +1,13 @@
 import json
 
 import pytest
+import pytest_asyncio
 from elasticsearch import AsyncElasticsearch
 
 from .settings import test_settings
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def es_client():
     client = AsyncElasticsearch(hosts=test_settings.es_host, 
                                 validate_cert=False, 
@@ -27,8 +28,8 @@ def get_es_bulk_query(es_data: list[dict], es_index: str, es_id_field: str):
 
 @pytest.fixture
 def es_write_data(es_client):
-    async def inner(es_data: list[dict]):
-        bulk_query = get_es_bulk_query(es_data, test_settings.es_index, test_settings.es_id_field)
+    async def inner(bulk_query: list[str]):
+        # bulk_query = get_es_bulk_query(es_data, test_settings.es_index, test_settings.es_id_field)
 
         str_query = '\n'.join(bulk_query) + '\n'
 

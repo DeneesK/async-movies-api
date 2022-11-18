@@ -13,9 +13,6 @@ from functional.settings import test_settings
 
 
 
-
-
-
 @pytest_asyncio.fixture(scope='session')
 async def es_client():
     client = AsyncElasticsearch(hosts=test_settings.es_host)  # ! Warning - no port here, the default one used.

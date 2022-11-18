@@ -77,7 +77,7 @@ async def test_film(es_write_data, checking_id, expected_answer):
     bulk_query = make_bulk_query(es_data, 'movies', 'id')
     # 1.1 Записываем данные в ES
 
-    await es_write_data(bulk_query, 1, 'movies')
+    await es_write_data(bulk_query)  # , 1, 'movies'
     
     # 2. Запрашиваем данные из ES по API
 
