@@ -10,7 +10,7 @@ services:
     image: redis
     
   fast-api-solution:
-    image: fastapi-solution_service
+    image: fastapi-solution-service
     command: [ "python", "main.py" ]
     depends_on:
       - redis

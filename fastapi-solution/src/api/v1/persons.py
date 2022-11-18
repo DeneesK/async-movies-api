@@ -20,6 +20,7 @@ class Person(BaseModel):
 # В сигнатуре функции указываем тип данных, получаемый из адреса запроса (person_id: str)
 # И указываем тип возвращаемого объекта — Person
 
+
 # Внедряем FilmService с помощью Depends(get_film_service)
 @router.get('/person/{person_id}', response_model=Person,
             description='Get a list persons that match id',
@@ -32,7 +33,7 @@ async def person_details(person_id: str, person_service: PersonService = Depends
         # Если фильм не найден, отдаём 404 статус
         # Желательно пользоваться уже определёнными HTTP-статусами, которые содержат enum
                 # Такой код будет более поддерживаемым
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='person not found')
     else:
         # We ised id, so there is only one item.
         person = person_lst[0]
@@ -53,8 +54,8 @@ async def persons_list(query: str | None = Query(default=None),
                        from_:int=None, page_size=None,
                        person_service: PersonService = Depends(get_person_service)) -> list:
     """sort must be json-encoded list. An example:
-    http://127.0.0.1:8000/api/v1/persons/search/William%20Po?sort=name.raw&sort=...
-    http://127.0.0.1:8000/api/v1/persons/search/William%20Po?filter=Po Chien Chin&filter=...
+    http://127.0.0.1:8000/api/v1/persons/search/?query=William%20Po?sort=name.raw&sort=...
+    http://127.0.0.1:8000/api/v1/persons/search/?query=William%20Po?filter=Po Chien Chin&filter=...
     """
     persons = await person_service.get_persons_by_query(query,
                                                         from_, page_size,

@@ -1,10 +1,36 @@
 import datetime
 import uuid
-
 import aiohttp
 import pytest
 
 from ..settings import test_settings
+from .common import make_bulk_query
+
+
+def get_es_films_bulk_query(query_data, es_index, es_id_field, items_count):
+    # 1. Генерируем данные для ES
+    es_data = [{
+        'id': str(uuid.uuid4()),
+        'imdb_rating': 8.5,
+        'genre': ['Action', 'Sci-Fi'],
+        'title': query_data['search'],
+        'description': 'New World',
+        'director': ['Stan'],
+        'actors_names': ['Ann', 'Bob'],
+        'writers_names': ['Ben', 'Howard'],
+        'actors': [
+            {'id': '111', 'name': 'Ann'},
+            {'id': '222', 'name': 'Bob'}
+        ],
+        'writers': [
+            {'id': '333', 'name': 'Ben'},
+            {'id': '444', 'name': 'Howard'}
+        ],
+        'created_at': datetime.datetime.now().isoformat(),
+        'updated_at': datetime.datetime.now().isoformat(),
+        'film_work_type': 'movie'
+    } for _ in range(items_count)]
+    return make_bulk_query(es_data, es_index, es_id_field)
 
 
 @pytest.mark.parametrize(
@@ -44,14 +70,14 @@ async def test_film(es_write_data, checking_id, expected_answer):
             {'id': '333', 'name': 'Ben'},
             {'id': '444', 'name': 'Howard'}
         ],
-        'created_at': datetime.datetime.now().isoformat(),
-        'updated_at': datetime.datetime.now().isoformat(),
+        #'created_at': datetime.datetime.now().isoformat(),
+        #'updated_at': datetime.datetime.now().isoformat(),
         'film_work_type': 'movie'
     }]
- 
+    bulk_query = make_bulk_query(es_data, 'movies', 'id')
     # 1.1 Записываем данные в ES
 
-    await es_write_data(es_data) 
+    await es_write_data(bulk_query)  # , 1, 'movies'
     
     # 2. Запрашиваем данные из ES по API
 
