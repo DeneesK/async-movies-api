@@ -5,11 +5,11 @@ import datetime
 
 # from elasticsearch import AsyncElasticsearch
 
-from functional.settings import test_settings
+from ..settings import test_settings
 
 #  Название теста должно начинаться со слова `test_`
 #  Любой тест с асинхронными вызовами нужно оборачивать декоратором `pytest.mark.asyncio`, который следит за запуском и работой цикла событий.
-from functional.src.common import make_bulk_query
+from .common import make_bulk_query
 
 ES_INDEX = 'genres'
 
@@ -49,7 +49,7 @@ async def test_search(es_write_data, make_search_request, query_data, expected_a
 
     page_size = expected_answer['length']
     # to replace with:
-    status, body, headers = await make_search_request('/api/v1/persons/search', query_data, expected_answer, items_count)
+    status, body, headers = await make_search_request('/api/v1/genres/search', query_data, expected_answer, items_count)
 
     # 4. Проверяем ответ
 
@@ -62,7 +62,7 @@ async def test_search(es_write_data, make_search_request, query_data, expected_a
     [
         (
                 {'search': 'Super Action'},
-                {'status': 200, 'length': 2}  # 2 because there are 2 items, 'id' and 'name'
+                {'status': 200, 'length': 3}  # 3 because there are 3 items, 'id', 'name', 'description'
         )
     ]
 )
@@ -77,7 +77,7 @@ async def test_by_id(es_write_data, make_id_request, query_data, expected_answer
 
     page_size = expected_answer['length']
     # to replace with:
-    status, body, headers = await make_id_request(f'/api/v1/persons/person/{person_id}')
+    status, body, headers = await make_id_request(f'/api/v1/genres/genre/{person_id}')
 
     # 4. Проверяем ответ
 

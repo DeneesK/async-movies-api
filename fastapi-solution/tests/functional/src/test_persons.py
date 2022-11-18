@@ -5,11 +5,11 @@ import datetime
 
 # from elasticsearch import AsyncElasticsearch
 
-from functional.settings import test_settings
+from ..settings import test_settings
 
 #  Название теста должно начинаться со слова `test_`
 #  Любой тест с асинхронными вызовами нужно оборачивать декоратором `pytest.mark.asyncio`, который следит за запуском и работой цикла событий.
-from functional.src.common import make_bulk_query
+from .common import make_bulk_query
 
 ES_INDEX = 'persons'
 
