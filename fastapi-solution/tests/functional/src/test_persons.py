@@ -1,14 +1,11 @@
 import json
-import pytest
 import uuid
 import datetime
+from http import HTTPStatus
 
-# from elasticsearch import AsyncElasticsearch
+import pytest
 
 from ..settings import test_settings
-
-#  Название теста должно начинаться со слова `test_`
-#  Любой тест с асинхронными вызовами нужно оборачивать декоратором `pytest.mark.asyncio`, который следит за запуском и работой цикла событий.
 from .common import make_bulk_query
 
 ES_INDEX = 'persons'
@@ -24,16 +21,17 @@ def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count):
     } for _ in range(items_count)]
     return make_bulk_query(es_data, es_index, es_id_field)
 
+
 @pytest.mark.parametrize(
     'query_data, expected_answer',
     [
         (
                 {'search': 'John Smith'},
-                {'status': 200, 'length': 50}
+                {'status': HTTPStatus.OK, 'length': 50}
         ),
         (
                 {'search': 'William Shakespear'},
-                {'status': 200, 'length': 1}  # 1 - because one item with "not found"
+                {'status': HTTPStatus.OK, 'length': 1}  # 1 - because one item with "not found"
         )
     ]
 )
