@@ -16,7 +16,7 @@ async def main():
     response = await redis_client.execute_command('PING')
     if response:
         return True
-    raise ConnectionError   
+    raise ConnectionError
 
 
 if __name__ == '__main__':
