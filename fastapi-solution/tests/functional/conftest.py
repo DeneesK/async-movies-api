@@ -51,12 +51,14 @@ async def aiohttp_client_session():
 
 @pytest_asyncio.fixture
 def make_search_request(aiohttp_client_session):
-    async def inner(url_start, query_data, expected_answer, items_count):
+    async def inner(url_start, query_data, expected_answer, items_count, from_=None):
         """url start is the beginning of url, like '/api/v1/films/search'."""
         url = test_settings.service_url + url_start
         page_size = expected_answer['length']
         assert page_size <= items_count
         query_data1 = {'query': query_data["search"], 'page_size': page_size}
+        if from_:
+            query_data1['from_'] = from_
         async with aiohttp_client_session.get(url, params=query_data1) as response:
             body = await response.json()
             headers = response.headers
