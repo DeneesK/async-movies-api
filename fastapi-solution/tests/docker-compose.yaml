@@ -17,6 +17,8 @@ services:
       - elastic
     env_file:
       - service.env
+    ports:
+      - "8000:8000"
     
   tests:
     build:
