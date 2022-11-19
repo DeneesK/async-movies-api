@@ -1,3 +1,5 @@
+.vscode
+.vs_code
 postgres_to_es/state.json
 state.json
 # Byte-compiled / optimized / DLL files
