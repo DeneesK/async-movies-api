@@ -7,3 +7,6 @@
 
 ### 3. URL Swagger:
 `http://127.0.0.1:8000/api/openapi#/`
+
+## <b>Cсылка на репозиторий: 
+### https://github.com/dondublon/Async_API_sprint_2
