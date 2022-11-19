@@ -27,7 +27,7 @@ class ElasticSearch(Search):
             body["query"]["bool"]["filter"] = [{'term': {"name": filter_item}} for filter_item in filter_items]
         if sort_fields:
             # noinspection PyTypeChecker
-            body["sort"] = [{sort_field: 'asc'} for sort_field in sort_fields]
+            body["sort"] = [{sort_field: 'desc'} for sort_field in sort_fields]
         if from_ is not None:
             body['from'] = from_
         if page_size is not None:
