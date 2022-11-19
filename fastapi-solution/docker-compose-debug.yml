@@ -10,14 +10,14 @@ services:
     ports:
       - 9200:9200
 
-  # postgres_db:
-  #   env_file:
-  #     - pg_container.env
-  #   image: postgres:13
-  #   volumes:
-  #     - ./pg_data:/var/lib/postgresql/data
-  #   ports:
-  #     - 5432:5432
+  postgres_db:
+    env_file:
+      - pg_container.env
+    image: postgres:13
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
 
   redis:
     image: redis
