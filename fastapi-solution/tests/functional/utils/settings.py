@@ -11,6 +11,6 @@ class TestSettings(BaseSettings):
 
     redis_host: str = Field(os.environ.get('REDIS_HOST'))
     service_host: str = Field(os.environ.get('SERVICE_HOST'))
- 
+
 
 test_settings = TestSettings()

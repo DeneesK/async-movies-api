@@ -1,5 +1,7 @@
 import datetime
 import uuid
+from http import HTTPStatus
+
 import aiohttp
 import pytest
 
@@ -38,16 +40,14 @@ def get_es_films_bulk_query(query_data, es_index, es_id_field, items_count):
     [
         (
                 '7e0ad51a-332f-4ff0-b8b9-9b5308836cb1',
-                {'status': 200, 'result': 'The Star'}
+                {'status': HTTPStatus.OK, 'result': 'The Star'}
         ),
         (
                 '1111111111',
-                {'status': 404, 'result': 'film not found'}
+                {'status': HTTPStatus.NOT_FOUND, 'result': 'film not found'}
         )
     ]
 )
-
-
 @pytest.mark.asyncio
 async def test_film(es_write_data, checking_id, expected_answer):
 
@@ -70,30 +70,26 @@ async def test_film(es_write_data, checking_id, expected_answer):
             {'id': '333', 'name': 'Ben'},
             {'id': '444', 'name': 'Howard'}
         ],
-        #'created_at': datetime.datetime.now().isoformat(),
-        #'updated_at': datetime.datetime.now().isoformat(),
+        # 'created_at': datetime.datetime.now().isoformat(),
+        # 'updated_at': datetime.datetime.now().isoformat(),
         'film_work_type': 'movie'
     }]
     bulk_query = make_bulk_query(es_data, 'movies', 'id')
     # 1.1 Записываем данные в ES
 
     await es_write_data(bulk_query)  # , 1, 'movies'
-    
+
     # 2. Запрашиваем данные из ES по API
 
     session = aiohttp.ClientSession()
     url = f'http://{test_settings.service_host}:8000/api/v1/films/film/{checking_id}'
     async with session.get(url) as response:
         body = await response.json()
-        headers = response.headers
         status = response.status
         result = body.get('title', 'film not found')
     await session.close()
 
-    # 2. Проверяем ответ 
+    # 2. Проверяем ответ
 
     assert status == expected_answer['status']
     assert result == expected_answer['result']
-    
-        
-    

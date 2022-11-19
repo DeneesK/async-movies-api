@@ -1,9 +1,11 @@
 import datetime
 import uuid
+from http import HTTPStatus
 
 import aiohttp
 import pytest
 
+from .common import make_bulk_query
 from ..settings import test_settings
 
 
@@ -12,18 +14,16 @@ from ..settings import test_settings
     [
         (
                 {'query': 'The Star', 'page_size': 50},
-                {'status': 200, 'length': 50}
+                {'status': HTTPStatus.OK, 'length': 50}
         ),
         (
                 {'query': 'Mashed potato', 'page_size': 50},
-                {'status': 200, 'length': 1}
+                {'status': HTTPStatus.NOT_FOUND, 'length': 1}
         )
     ]
 )
-
-
 @pytest.mark.asyncio
-async def test_search(es_write_data, query_data, expected_answer):  
+async def test_search(es_write_data, query_data, expected_answer):
 
     # 1. Генерируем данные для ES
 
@@ -48,11 +48,11 @@ async def test_search(es_write_data, query_data, expected_answer):
         'updated_at': datetime.datetime.now().isoformat(),
         'film_work_type': 'movie'
     } for _ in range(60)]
- 
-    # 1.1 Записываем данные в ES
 
-    await es_write_data(es_data) 
-    
+    # 1.1 Записываем данные в ES
+    bulk_query = make_bulk_query(es_data, test_settings.es_index, test_settings.es_id_field)
+    await es_write_data(bulk_query)
+
     # 2. Запрашиваем данные из ES по API
 
     session = aiohttp.ClientSession()
@@ -63,7 +63,7 @@ async def test_search(es_write_data, query_data, expected_answer):
         length = len(body)
     await session.close()
 
-    # 2. Проверяем ответ 
+    # 2. Проверяем ответ
 
     assert status == expected_answer['status']
     assert length == expected_answer['length']

@@ -26,6 +26,6 @@ services:
     depends_on:
       - fast-api-solution
     entrypoint: >
-      sh -c "python3 /utils/wait_for_es.py
-      && python3 /utils/wait_for_redis.py
-      && pytest /src"
+      sh -c "python3 utils/wait_for_es.py
+      && python3 utils/wait_for_redis.py
+      && pytest src"
