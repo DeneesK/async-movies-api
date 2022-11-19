@@ -15,8 +15,6 @@ def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count, us
     es_data = [{
         'id': str(uuid.uuid4()),
         'name': (random_string(6) + ' ' if use_random else '') + query_data['search'],
-        #'created_at': datetime.datetime.now().isoformat(),
-        #'updated_at': datetime.datetime.now().isoformat(),
     } for _ in range(items_count)]
     return make_bulk_query(es_data, es_index, es_id_field)
 
