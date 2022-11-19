@@ -6,13 +6,20 @@ import aiohttp
 from elasticsearch import AsyncElasticsearch
 
 from .settings import test_settings
-
+from etl.setting import person_index_body, genre_index_body, filmwork_index_body
 
 @pytest_asyncio.fixture
 async def es_client():
     client = AsyncElasticsearch(hosts=test_settings.es_host, 
                                 validate_cert=False, 
                                 use_ssl=False)
+    # create the schemas:
+    if not await client.indices.exists('movies'):
+        await client.indices.create('movies', filmwork_index_body)
+    if not await client.indices.exists('persons'):
+        await client.indices.create('persons', person_index_body)
+    if not await client.indices.exists('genres'):
+        await client.indices.create('genres', genre_index_body)
     yield client
     await client.close()
 
@@ -51,7 +58,8 @@ async def aiohttp_client_session():
 
 @pytest_asyncio.fixture
 def make_search_request(aiohttp_client_session):
-    async def inner(url_start, query_data, expected_answer, items_count, from_=None):
+    async def inner(url_start, query_data, expected_answer, items_count, from_=None,
+                    sorting_fields=None):
         """url start is the beginning of url, like '/api/v1/films/search'."""
         url = test_settings.service_url + url_start
         page_size = expected_answer['length']
@@ -59,6 +67,8 @@ def make_search_request(aiohttp_client_session):
         query_data1 = {'query': query_data["search"], 'page_size': page_size}
         if from_:
             query_data1['from_'] = from_
+        if sorting_fields:
+            query_data1['sort'] = sorting_fields
         async with aiohttp_client_session.get(url, params=query_data1) as response:
             body = await response.json()
             headers = response.headers
