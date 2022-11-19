@@ -17,8 +17,8 @@ from db.search_elastic import ElasticSearch
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
 
-# FilmService содержит бизнес-логику по работе с фильмами. 
-# Никакой магии тут нет. Обычный класс с обычными методами. 
+# FilmService содержит бизнес-логику по работе с фильмами.
+# Никакой магии тут нет. Обычный класс с обычными методами.
 # Этот класс ничего не знает про DI — максимально сильный и независимый.
 class FilmService(DBObjectService):
     async def get_by_id(self, film_id: str) -> Optional[Film]:
@@ -38,22 +38,27 @@ class FilmService(DBObjectService):
             return None
         return Film(**doc['_source'])
 
-    async def get_films_by_query(self, query: str, from_: int=None, page_size:int=None) -> list:
+    async def get_films_by_query(self, query: str,
+                                 from_: int = None,
+                                 page_size: int = None,
+                                 sort: list = None) -> list:
         """
         Метод запрашивает из ES список фильмов, по запросу введеному в поиске
         """
         redis_key = hash((query, from_, page_size))
         films = await self._films_from_cache(redis_key)
         if not films:
-            films = await self._search_films(query, from_, page_size)
+            films = await self._search_films(query, from_, page_size, sort)
             if not films:
                 films = []
             await self._put_films_to_cache(key=redis_key, films=films)
         return films
 
-    async def _search_films(self, query: str, from_:int=None,
-                            page_size:int=None) -> list:
-        results = await self.search.search(query, from_, page_size)
+    async def _search_films(self, query: str,
+                            from_: int = None,
+                            page_size: int = None,
+                            sort: list = None) -> list:
+        results = await self.search.search(query, from_, page_size, sort_fields=sort)
         films = [Film(**r) for r in results]
         return films
 
@@ -63,7 +68,7 @@ class FilmService(DBObjectService):
         if not data:
             return None
 
-        data_dict=json.loads(data)
+        data_dict = json.loads(data)
         if isinstance(data_dict, list):
             dict_obj_2 = [json.loads(itm) for itm in data_dict]
             films = parse_obj_as(list[Film], dict_obj_2)

@@ -8,12 +8,12 @@ services:
     env_file:
       - elastic.env
 
-  postgres_db:
-    env_file:
-      - pg_container.env
-    image: postgres:13
-    volumes:
-      - ./pg_data:/var/lib/postgresql/data
+  # postgres_db:
+  #   env_file:
+  #     - pg_container.env
+  #   image: postgres:13
+  #   volumes:
+  #     - ./pg_data:/var/lib/postgresql/data
 
   redis:
     image: redis

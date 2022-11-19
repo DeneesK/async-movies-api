@@ -7,12 +7,7 @@ from services.film import FilmService, get_film_service
 # Объект router, в котором регистрируем обработчики
 router = APIRouter()
 
-# FastAPI в качестве моделей использует библиотеку pydantic
-# https://pydantic-docs.helpmanual.io
-# У неё есть встроенные механизмы валидации, сериализации и десериализации
-# Также она основана на дата-классах
 
-# Модель ответа API
 class Film(BaseModel):
     id: str
     title: str
@@ -23,17 +18,10 @@ class Film(BaseModel):
     actors: list | None
     writers: list | None
 
-# С помощью декоратора регистрируем обработчик film_details
-# На обработку запросов по адресу <some_prefix>/some_id
-# Позже подключим роутер к корневому роутеру
-# И адрес запроса будет выглядеть так — /api/v1/film/some_id
-# В сигнатуре функции указываем тип данных, получаемый из адреса запроса (film_id: str)
-# И указываем тип возвращаемого объекта — Film
 
-# Внедряем FilmService с помощью Depends(get_film_service)
-@router.get('/film/{film_id}', 
+@router.get('/film/{film_id}',
             response_model=Film,
-            description = 'Getting a movie by its id',
+            description='Getting a movie by its id',
             summary="Film Search by id",
             response_description="Title, film rating, genre, description and staff working on the film"
             )
@@ -42,27 +30,30 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
     if not film:
         # Если фильм не найден, отдаём 404 статус
         # Желательно пользоваться уже определёнными HTTP-статусами, которые содержат enum
-                # Такой код будет более поддерживаемым
+        # Такой код будет более поддерживаемым
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
 
     # Перекладываем данные из models.Film в Film
     # Обратите внимание, что у модели бизнес-логики есть поле description
-        # Которое отсутствует в модели ответа API.
-        # Если бы использовалась общая модель для бизнес-логики и формирования ответов API
-        # вы бы предоставляли клиентам данные, которые им не нужны
-        # и, возможно, данные, которые опасно возвращать
+    # Которое отсутствует в модели ответа API.
+    # Если бы использовалась общая модель для бизнес-логики и формирования ответов API
+    # вы бы предоставляли клиентам данные, которые им не нужны
+    # и, возможно, данные, которые опасно возвращать
     return Film(**film.dict())
 
 
-@router.get('/search/', 
+@router.get('/search/',
             response_model=list[Film],
-            description = 'Get a list movies that match query',
+            description='Get a list movies that match query',
             summary="Films Search by query",
             response_description="Title, film rating, genre, description and staff working on the film"
             )
-async def films_list(query: str | None = Query(default=None), from_:int=None, page_size=None,
+async def films_list(query: str | None = Query(default=None),
+                     sort: list[str] = Query(default=['imdb_rating']),
+                     from_: int | None = None,
+                     page_size: int | None = None,
                      film_service: FilmService = Depends(get_film_service)) -> list:
-    films = await film_service.get_films_by_query(query, from_, page_size)
+    films = await film_service.get_films_by_query(query, from_, page_size, sort)
     if not films:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='nothing found')
     return [Film(**f.dict()) for f in films]
