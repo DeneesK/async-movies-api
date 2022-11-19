@@ -45,13 +45,19 @@ async def test_search(es_write_data, make_search_request, query_data, expected_a
     # 3. Запрашиваем данные из ES по API
 
     page_size = expected_answer['length']
-    # to replace with:
-    status, body, headers = await make_search_request('/api/v1/persons/search', query_data, expected_answer, items_count)
+    # several queries for each pagination page:
+    for page_num in range(items_count // page_size):
+        query_data1 = query_data.copy()
+        if page_num > 0:
+            # noinspection PyTypeChecker
+            query_data1['from_'] = page_num
+        status, body, headers = await make_search_request('/api/v1/persons/search', query_data1, expected_answer, items_count)
 
-    # 4. Проверяем ответ
-
-    assert status == expected_answer['status']
-    assert len(body) == page_size
+        # 4. Проверяем ответ
+        assert status == expected_answer['status']
+        assert len(body) == page_size
+        for item in body:
+            assert item['name'] == query_data['search']
 
 
 @pytest.mark.parametrize(
