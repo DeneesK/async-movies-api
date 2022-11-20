@@ -16,12 +16,17 @@ async def es_client():
                                 validate_cert=False, 
                                 use_ssl=False)
     # create the schemas:
-    if not await client.indices.exists('movies'):
-        await client.indices.create('movies', filmwork_index_body)
-    if not await client.indices.exists('persons'):
-        await client.indices.create('persons', person_index_body)
-    if not await client.indices.exists('genres'):
-        await client.indices.create('genres', genre_index_body)
+    if await client.indices.exists('movies'):
+        await client.indices.delete('movies')
+    await client.indices.create('movies', filmwork_index_body)
+
+    if await client.indices.exists('persons'):
+        await client.indices.delete('persons')
+    await client.indices.create('persons', person_index_body)
+
+    if await client.indices.exists('genres'):
+        await client.indices.delete('genres')
+    await client.indices.create('genres', genre_index_body)
     yield client
     await client.close()
 
@@ -29,6 +34,7 @@ async def es_client():
 @pytest_asyncio.fixture
 async def redis_client():
     client = Redis(host=test_settings.redis_host)
+    await client.flushdb()
     yield client
     await client.close()
 
