@@ -76,7 +76,7 @@ async def test_film(es_write_data, redis_client, checking_id, expected_answer, m
 @pytest.mark.asyncio
 async def test_film_sort(expected_answer, make_search_request):
 
-    _, body, _ = await make_search_request('/api/v1/films/search')
+    _, body, _ = await make_search_request('/api/v1/films/search',)
 
     result = body[0].get('imdb_rating')  # проверяем первый элмент, первым должен находится фильм с самым высоким рейтингом
 
