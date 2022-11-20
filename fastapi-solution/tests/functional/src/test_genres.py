@@ -12,14 +12,15 @@ from .common import make_bulk_query, random_string, is_sorted
 ES_INDEX = 'genres'
 
 
-def get_es_genres_bulk_query(query_data, es_index, es_id_field, items_count, use_random=False):
+def get_es_genres_bulk_query(query_data, es_index, es_id_field, items_count):
     # 1. Генерируем данные для ES
     es_data = [{
         'id': str(uuid.uuid4()),
         'name': query_data['search'],
-        'description':' '.join(random_string(6) for i in range(3)),
+        'description':' '.join(random_string(6) for _ in range(3)),
     } for _ in range(items_count)]
     return make_bulk_query(es_data, es_index, es_id_field)
+
 
 @pytest.mark.parametrize(
     'query_data, expected_answer',
@@ -75,7 +76,6 @@ async def test_by_id(es_write_data, make_id_request, query_data, expected_answer
     items_count = 1
     bulk_query = get_es_genres_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
     person_id = json.loads(bulk_query[0])['index']['_id']
-    print(f'got person id {person_id}')
     await es_write_data(bulk_query)
     # 3. Запрашиваем данные из ES по API
 

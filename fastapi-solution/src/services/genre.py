@@ -37,15 +37,15 @@ class GenreService(DBObjectService):
         return [result]
 
     async def get_genres_by_query(self, query: Key,
-                                  from_:int=None, page_size:int=None,
-                                  sort_fields:list|None=None,
+                                  from_: int = None, page_size: int = None,
+                                  sort_fields: list | None = None,
                                   filter_items: list | None = None) -> list[Genre]:
         """
         Метод запрашивает из ES список персон, по запросу введеному в поиске
         """
         def to_tuple(arg):
             return None if arg is None else tuple(arg)
-        redis_key = hash((query, to_tuple(sort_fields), to_tuple(filter_items), from_, page_size))
+        redis_key = str((query, to_tuple(sort_fields), to_tuple(filter_items), from_, page_size))
         genres = await self._genres_from_cache(redis_key)
         if genres is None:
             genres = await self._search_genres(query,
@@ -57,8 +57,8 @@ class GenreService(DBObjectService):
         return genres
 
     async def _search_genres(self, query: str,
-                             from_:int=None, page_size:int=None,
-                             sort_fields:list|None=None,
+                             from_: int = None, page_size: int = None,
+                             sort_fields: list | None = None,
                              filter_items: list | None = None
                              ) -> list[Genre]:
 
@@ -67,7 +67,7 @@ class GenreService(DBObjectService):
         films = [Genre(**r) for r in results]
         return films
 
-    async def _genres_from_cache(self, key : Hashable) -> list[Genre]|None:
+    async def _genres_from_cache(self, key: Hashable) -> list[Genre] | None:
         """None - значит, нет данных, пустой список - валидное содержимое."""
         data = await self.cache.get(key)
         if data is None:

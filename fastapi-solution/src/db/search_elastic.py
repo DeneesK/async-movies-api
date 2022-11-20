@@ -13,14 +13,14 @@ class ElasticSearch(Search):
         return await self.elastic.get(self.index_name, id_)
 
     async def search(self, query, from_, page_size,
-                     sort_fields:list|None=None,
-                     filter_items:list|None=None):
+                     sort_fields: list | None = None,
+                     filter_items: list | None = None):
         """from_ and page_size are about pagination.
         :param sort_fields:
         :param filter_items:
         """
         if filter_items is None:
-            body = { "query": { "query_string": { "query": query}}}
+            body = {"query": {"query_string": {"query": query}}}
             body['query']['query_string']['query'] = query
         else:
             body = {"query": {'bool': {'must': {"match": {"name": {"query": query}}}}}}
