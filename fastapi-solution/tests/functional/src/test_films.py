@@ -54,7 +54,7 @@ from .common import make_bulk_query
 async def test_film(es_write_data, redis_client, checking_id, expected_answer):
 
     # 1. Генерируем данные для ES
-    film_id = checking_id  # '7e0ad51a-332f-4ff0-b8b9-9b5308836cb1'
+    film_id = '7e0ad51a-332f-4ff0-b8b9-9b5308836cb1'
     es_data = [{
         'id': film_id,
         'imdb_rating': 8.5,
@@ -94,6 +94,9 @@ async def test_film(es_write_data, redis_client, checking_id, expected_answer):
     assert result == expected_answer['result']
 
     # Checking the cache.
-    cache_data_str = await redis_client.get(film_id)
-    cache_data = json.loads(cache_data_str)
-    assert cache_data == body
+    cache_data_str = await redis_client.get(checking_id)
+    if expected_answer['status'] == HTTPStatus.OK:
+        cache_data = json.loads(cache_data_str)
+        assert cache_data == body
+    else:
+        assert cache_data_str is None
