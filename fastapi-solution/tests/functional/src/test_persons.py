@@ -54,12 +54,11 @@ async def test_search(es_write_data, redis_client, make_search_request, query_da
         # 4. Проверяем ответ
         assert status == expected_answer['status']
         assert len(body) == page_size
-        #for item in body:
-        #    assert item['name'] in names
-        #assert is_sorted(body, lambda x: x['name'])
+        for item in body:
+            assert item['name'] in names
+        assert is_sorted(body, lambda x: x['name'])
         # 5. Let's check the cache
         redis_key = str((query_data['search'], ('name.raw',), None, from_, str(page_size)))
-        print('redis_key', (query_data['search'], ('name.raw',), None, from_, str(page_size)))
         cache_data_str = await redis_client.get(redis_key)
         cache_data = json.loads(cache_data_str)
         for cache_item_str, response_item in zip(cache_data, body):
