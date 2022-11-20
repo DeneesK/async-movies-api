@@ -45,7 +45,7 @@ class FilmService(DBObjectService):
         """
         Метод запрашивает из ES список фильмов, по запросу введеному в поиске
         """
-        redis_key = hash((query, from_, page_size))
+        redis_key = str((query, from_, page_size))
         films = await self._films_from_cache(redis_key)
         if not films:
             films = await self._search_films(query, from_, page_size, sort)
