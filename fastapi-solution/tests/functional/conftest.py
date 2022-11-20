@@ -6,7 +6,7 @@ import aiohttp
 from elasticsearch import AsyncElasticsearch
 
 from .settings import test_settings
-from etl.setting import person_index_body, genre_index_body, filmwork_index_body
+from .es_schemes import person_index_body, genre_index_body, filmwork_index_body
 
 @pytest_asyncio.fixture
 async def es_client():
@@ -44,7 +44,10 @@ def es_write_data(es_client):
         response = await es_client.bulk(str_query, refresh=True)
 
         if response['errors']:
-            raise Exception('Ошибка записи данных в Elasticsearch')
+            msg = 'Ошибка записи данных в Elasticsearch'
+            if len(response['items'])>0:
+                msg += str(response['items'][0]['index'])
+            raise Exception(msg)
 
     return inner
 
