@@ -14,7 +14,7 @@ def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count, us
     # 1. Генерируем данные для ES
     es_data = [{
         'id': str(uuid.uuid4()),
-        'name': (random_string(6) + ' ' if use_random else '') + query_data['search'],
+        'name': (random_string(6) + ' ' if use_random else '') + query_data['query'],
     } for _ in range(items_count)]
     return make_bulk_query(es_data, es_index, es_id_field)
 
@@ -23,11 +23,11 @@ def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count, us
     'query_data, expected_answer',
     [
         (
-                {'search': 'John Smith'},
+                {'query': 'John Smith'},
                 {'status': HTTPStatus.OK, 'length': 50}
         ),
         (
-                {'search': 'William Shakespear'},
+                {'query': 'William Shakespear'},
                 {'status': HTTPStatus.OK, 'length': 1}  # 1 - because one item with "not found"
         )
     ]
@@ -58,7 +58,7 @@ async def test_search(es_write_data, redis_client, make_search_request, query_da
             assert item['name'] in names
         assert is_sorted(body, lambda x: x['name'])
         # 5. Let's check the cache
-        redis_key = str((query_data['search'], ('name.raw',), None, from_, str(page_size)))
+        redis_key = str((query_data['query'], ('name.raw',), None, from_, str(page_size)))
         cache_data_str = await redis_client.get(redis_key)
         cache_data = json.loads(cache_data_str)
         for cache_item_str, response_item in zip(cache_data, body):
@@ -70,7 +70,7 @@ async def test_search(es_write_data, redis_client, make_search_request, query_da
     'query_data, expected_answer',
     [
         (
-                {'search': 'John Smith'},
+                {'query': 'John Smith'},
                 {'status': 200, 'length': 2}
         )
     ]
@@ -92,7 +92,7 @@ async def test_by_id(es_write_data, redis_client, make_id_request, query_data, e
 
     assert status == expected_answer['status']
     assert len(body) == page_size
-    assert body['name'] == query_data['search']
+    assert body['name'] == query_data['query']
 
     # 5. Checking the cache
     cache_data_str = await redis_client.get(person_id)

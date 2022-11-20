@@ -45,7 +45,7 @@ class FilmService(DBObjectService):
         """
         Метод запрашивает из ES список фильмов, по запросу введеному в поиске
         """
-        redis_key = hash((query, from_, page_size))
+        redis_key = str((query, from_, page_size))
         films = await self._films_from_cache(redis_key)
         if not films:
             films = await self._search_films(query, from_, page_size, sort)
@@ -58,7 +58,8 @@ class FilmService(DBObjectService):
                             from_: int = None,
                             page_size: int = None,
                             sort: list = None) -> list:
-        results = await self.search.search(query, from_, page_size, sort_fields=sort)
+        results = await self.search.search(query, from_, page_size, sort_fields=sort,
+                                           sort_order='desc')
         films = [Film(**r) for r in results]
         return films
 
@@ -85,6 +86,7 @@ class FilmService(DBObjectService):
         else:    
             # noinspection PyTypeChecker
             await self.cache.set(key, films.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
+
 
 @lru_cache()
 def get_film_service(

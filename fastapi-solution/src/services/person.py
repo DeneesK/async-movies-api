@@ -61,7 +61,8 @@ class PersonService(DBObjectService):
                               sort_fields: list | None = None,
                               filter_items: list | None = None) -> list[Person]:
 
-        results = await self.search.search(query, from_, page_size, sort_fields, filter_items)
+        results = await self.search.search(query, from_, page_size, sort_fields, filter_items,
+                                           sort_order='asc')
         films = [Person(**r) for r in results]
         return films
 

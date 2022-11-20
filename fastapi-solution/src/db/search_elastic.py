@@ -14,8 +14,13 @@ class ElasticSearch(Search):
 
     async def search(self, query, from_, page_size,
                      sort_fields: list | None = None,
-                     filter_items: list | None = None):
+                     filter_items: list | None = None,
+                     sort_order='asc'):
         """from_ and page_size are about pagination.
+        :param page_size:
+        :param from_:
+        :param query:
+        :param sort_order:
         :param sort_fields:
         :param filter_items:
         """
@@ -27,7 +32,7 @@ class ElasticSearch(Search):
             body["query"]["bool"]["filter"] = [{'term': {"name": filter_item}} for filter_item in filter_items]
         if sort_fields:
             # noinspection PyTypeChecker
-            body["sort"] = [{sort_field: 'desc'} for sort_field in sort_fields]
+            body["sort"] = [{sort_field: sort_order} for sort_field in sort_fields]
         if from_ is not None:
             body['from'] = from_
         if page_size is not None:
