@@ -50,14 +50,8 @@ async def test_film(es_write_data, redis_client, checking_id, expected_answer, m
     await es_write_data(bulk_query)  # , 1, 'movies'
 
     # 2. Запрашиваем данные из ES по API
-
-    session = aiohttp.ClientSession()
-    url = f'http://{test_settings.service_host}:8000/api/v1/films/film/{checking_id}'
-    async with session.get(url) as response:
-        body = await response.json()
-        status = response.status
-        result = body.get('title', 'film not found')
-    await session.close()
+    status, body, _ = await make_id_request(f'/api/v1/films/film/{checking_id}')
+    result = body.get('title', 'film not found')
 
     # 2. Проверяем ответ
 
@@ -82,11 +76,8 @@ async def test_film(es_write_data, redis_client, checking_id, expected_answer, m
 @pytest.mark.asyncio
 async def test_film_sort(expected_answer, make_search_request):
 
-    session = aiohttp.ClientSession()
-    url = f'http://{test_settings.service_host}:8000/api/v1/films/search/?query=star&sort=imdb_rating'
-    async with session.get(url) as response:
-        body = await response.json()
-        result = body[0].get('imdb_rating')  # проверяем первый элмент, первым должен находится фильм с самым высоким рейтингом
-    await session.close()
+    _, body, _ = await make_search_request('/api/v1/films/search')
+
+    result = body[0].get('imdb_rating')  # проверяем первый элмент, первым должен находится фильм с самым высоким рейтингом
 
     assert result == expected_answer['raiting']
