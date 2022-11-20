@@ -16,7 +16,7 @@ def get_es_genres_bulk_query(query_data, es_index, es_id_field, items_count):
     # 1. Генерируем данные для ES
     es_data = [{
         'id': str(uuid.uuid4()),
-        'name': query_data['search'],
+        'name': query_data['query'],
         'description':' '.join(random_string(6) for _ in range(3)),
     } for _ in range(items_count)]
     return make_bulk_query(es_data, es_index, es_id_field)
@@ -26,11 +26,11 @@ def get_es_genres_bulk_query(query_data, es_index, es_id_field, items_count):
     'query_data, expected_answer',
     [
         (
-                {'search': 'Comedy'},
+                {'query': 'Comedy'},
                 {'status': HTTPStatus.OK, 'length': 50}
         ),
         (
-                {'search': 'Tragedy'},
+                {'query': 'Tragedy'},
                 {'status': HTTPStatus.OK, 'length': 1}  # 1 - because one item with "not found"
         )
     ]
@@ -62,7 +62,7 @@ async def test_search(es_write_data, redis_client, make_search_request, query_da
             assert item['description'] in descriptions
         assert is_sorted(body, lambda x: x['description'])
         # 5. Check cache
-        redis_key = str((query_data['search'], ('description.raw',), None, from_, page_size))
+        redis_key = str((query_data['query'], ('description.raw',), None, from_, page_size))
         cache_data_str = await redis_client.get(redis_key)
         cache_data = json.loads(cache_data_str)
         for cache_item_str, response_item in zip(cache_data, body):
@@ -73,7 +73,7 @@ async def test_search(es_write_data, redis_client, make_search_request, query_da
     'query_data, expected_answer',
     [
         (
-                {'search': 'Super Action'},
+                {'query': 'Super Action'},
                 {'status': 200, 'length': 3}  # 3 because there are 3 items, 'id', 'name', 'description'
         )
     ]
@@ -94,7 +94,7 @@ async def test_by_id(es_write_data, redis_client, make_id_request, query_data, e
 
     assert status == expected_answer['status']
     assert len(body) == page_size
-    assert body['name'] == query_data['search']
+    assert body['name'] == query_data['query']
 
     # 5. Checking the cache
     cache_data_str = await redis_client.get(person_id)

@@ -78,7 +78,7 @@ def make_search_request(aiohttp_client_session):
         url = test_settings.service_url + url_start
         page_size = expected_answer['length']
         assert page_size <= items_count
-        query_data1 = {'query': query_data["search"], 'page_size': page_size}
+        query_data1 = {'query': query_data["query"], 'page_size': page_size}
         if from_:
             query_data1['from_'] = from_
         if sorting_fields:
