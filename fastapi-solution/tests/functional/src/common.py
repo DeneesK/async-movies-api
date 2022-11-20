@@ -19,5 +19,5 @@ def is_sorted(seq, key):
 
 def random_string(length):
     def random_char():
-        return chr(random.randint(ord('a'), ord('z') + 1))
+        return chr(random.randint(ord('a'), ord('z')))
     return ''.join(random_char() for _ in range(length))

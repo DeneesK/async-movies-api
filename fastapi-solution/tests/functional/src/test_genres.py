@@ -12,14 +12,15 @@ from .common import make_bulk_query, random_string, is_sorted
 ES_INDEX = 'genres'
 
 
-def get_es_genres_bulk_query(query_data, es_index, es_id_field, items_count, use_random=False):
+def get_es_genres_bulk_query(query_data, es_index, es_id_field, items_count):
     # 1. Генерируем данные для ES
     es_data = [{
         'id': str(uuid.uuid4()),
         'name': query_data['search'],
-        'description':' '.join(random_string(6) for i in range(3)),
+        'description':' '.join(random_string(6) for _ in range(3)),
     } for _ in range(items_count)]
     return make_bulk_query(es_data, es_index, es_id_field)
+
 
 @pytest.mark.parametrize(
     'query_data, expected_answer',
@@ -36,7 +37,7 @@ def get_es_genres_bulk_query(query_data, es_index, es_id_field, items_count, use
 )
 # @pytest.mark.parametrize('es_write_data', [get_es_persons_bulk_query], indirect=True)
 @pytest.mark.asyncio
-async def test_search(es_write_data, make_search_request, query_data, expected_answer):
+async def test_search(es_write_data, redis_client, make_search_request, query_data, expected_answer):
     """We assume that the index is clean."""
     items_count = 60
     bulk_query = get_es_genres_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
@@ -48,8 +49,9 @@ async def test_search(es_write_data, make_search_request, query_data, expected_a
 
     for page_num in range(items_count // page_size):
         query_data1 = query_data.copy()
+        from_ = page_num * page_size if page_num > 0 else None
         status, body, headers = await make_search_request('/api/v1/genres/search', query_data1, expected_answer,
-                                                          items_count, page_num if page_num > 0 else None,
+                                                          items_count, from_,
                                                           sorting_fields=['description.raw'])
 
         # 4. Проверяем ответ
@@ -59,7 +61,13 @@ async def test_search(es_write_data, make_search_request, query_data, expected_a
             assert item['name'] in ('Comedy', 'Tragedy')
             assert item['description'] in descriptions
         assert is_sorted(body, lambda x: x['description'])
-
+        # 5. Check cache
+        redis_key = str((query_data['search'], ('description.raw',), None, from_, page_size))
+        cache_data_str = await redis_client.get(redis_key)
+        cache_data = json.loads(cache_data_str)
+        for cache_item_str, response_item in zip(cache_data, body):
+            cache_item = json.loads(cache_item_str)
+            assert cache_item == response_item
 
 @pytest.mark.parametrize(
     'query_data, expected_answer',
@@ -71,11 +79,10 @@ async def test_search(es_write_data, make_search_request, query_data, expected_a
     ]
 )
 @pytest.mark.asyncio
-async def test_by_id(es_write_data, make_id_request, query_data, expected_answer):
+async def test_by_id(es_write_data, redis_client, make_id_request, query_data, expected_answer):
     items_count = 1
     bulk_query = get_es_genres_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
     person_id = json.loads(bulk_query[0])['index']['_id']
-    print(f'got person id {person_id}')
     await es_write_data(bulk_query)
     # 3. Запрашиваем данные из ES по API
 
@@ -88,3 +95,8 @@ async def test_by_id(es_write_data, make_id_request, query_data, expected_answer
     assert status == expected_answer['status']
     assert len(body) == page_size
     assert body['name'] == query_data['search']
+
+    # 5. Checking the cache
+    cache_data_str = await redis_client.get(person_id)
+    cache_data = json.loads(cache_data_str)
+    assert json.loads(cache_data[0]) == body

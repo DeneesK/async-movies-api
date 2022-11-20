@@ -37,15 +37,15 @@ class PersonService(DBObjectService):
         return [result]
 
     async def get_persons_by_query(self, query: Key,
-                                   from_:int=None, page_size:int=None,
-                                   sort_fields:list|None=None,
-                                   filter_items:list|None=None) -> list[Person]:
+                                   from_: int = None, page_size: int = None,
+                                   sort_fields: list | None = None,
+                                   filter_items: list | None = None) -> list[Person]:
         """
         Метод запрашивает из ES список персон, по запросу введеному в поиске
         """
         def to_tuple(arg):
             return None if arg is None else tuple(arg)
-        redis_key = hash((query, to_tuple(sort_fields), to_tuple(filter_items), from_, page_size))
+        redis_key = str((query, to_tuple(sort_fields), to_tuple(filter_items), from_, page_size))
         persons = await self._persons_from_cache(redis_key)
         if persons is None:
             persons = await self._search_persons(query,
@@ -57,15 +57,15 @@ class PersonService(DBObjectService):
         return persons
 
     async def _search_persons(self, query: str,
-                              from_:int=None, page_size:int=None,
-                              sort_fields:list|None=None,
-                              filter_items:list|None=None) -> list[Person]:
+                              from_: int = None, page_size: int = None,
+                              sort_fields: list | None = None,
+                              filter_items: list | None = None) -> list[Person]:
 
         results = await self.search.search(query, from_, page_size, sort_fields, filter_items)
         films = [Person(**r) for r in results]
         return films
 
-    async def _persons_from_cache(self, key : Hashable) -> list[Person]|None:
+    async def _persons_from_cache(self, key: Hashable) -> list[Person] | None:
         """None - значит, нет данных в кеше, пустой список - это валидное содержимое."""
         data = await self.cache.get(key)
         if data is None:

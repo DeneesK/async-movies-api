@@ -4,9 +4,11 @@ import pytest
 import pytest_asyncio
 import aiohttp
 from elasticsearch import AsyncElasticsearch
+from aioredis import Redis
 
 from .settings import test_settings
 from .es_schemes import person_index_body, genre_index_body, filmwork_index_body
+
 
 @pytest_asyncio.fixture
 async def es_client():
@@ -20,6 +22,13 @@ async def es_client():
         await client.indices.create('persons', person_index_body)
     if not await client.indices.exists('genres'):
         await client.indices.create('genres', genre_index_body)
+    yield client
+    await client.close()
+
+
+@pytest_asyncio.fixture
+async def redis_client():
+    client = Redis(host=test_settings.redis_host)
     yield client
     await client.close()
 
@@ -52,7 +61,9 @@ def es_write_data(es_client):
     return inner
 
 
-@pytest_asyncio.fixture# (scope='session') session - doesn't work, ScopeMismatch: You tried to access the function scoped fixture event_loop with a session scoped request object, involved factories:
+@pytest_asyncio.fixture  # (scope='session') session - doesn't work,
+# ScopeMismatch: You tried to access the function scoped fixture event_loop with a session scoped request object,
+# involved factories:
 async def aiohttp_client_session():
     session = aiohttp.ClientSession()
     yield session
