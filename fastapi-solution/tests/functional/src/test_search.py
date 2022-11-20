@@ -77,9 +77,10 @@ async def test_search(es_write_data, query_data, redis_client, make_search_reque
         redis_key = str((query_data['query'], from_, page_size))
         cache_data_str = await redis_client.get(redis_key)
         if expected_answer['status'] == HTTPStatus.OK:
+            print('cache_data_str', cache_data_str)
             cache_data = json.loads(cache_data_str)
             for cache_item_str, response_item in zip(cache_data, body):
                 cache_item = json.loads(cache_item_str)
                 assert cache_item == response_item
         else:
-            assert cache_data_str == b'[]'
+            assert cache_data_str is None
