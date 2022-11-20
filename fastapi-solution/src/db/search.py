@@ -7,5 +7,6 @@ class Search:
 
     async def search(self, query, from_, page_size,
                      sort_fields: list | None = None,
-                     filter_items: list | None = None) -> list[dict]:
+                     filter_items: list | None = None,
+                     sort_order='asc') -> list[dict]:
         raise NotImplementedError()
