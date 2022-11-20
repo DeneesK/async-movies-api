@@ -54,7 +54,7 @@ def es_write_data(es_client):
 
         if response['errors']:
             msg = 'Ошибка записи данных в Elasticsearch'
-            if len(response['items'])>0:
+            if len(response['items']) > 0:
                 msg += str(response['items'][0]['index'])
             raise Exception(msg)
 

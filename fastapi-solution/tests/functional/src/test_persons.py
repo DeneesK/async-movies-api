@@ -32,7 +32,6 @@ def get_es_persons_bulk_query(query_data, es_index, es_id_field, items_count, us
         )
     ]
 )
-# @pytest.mark.parametrize('es_write_data', [get_es_persons_bulk_query], indirect=True)
 @pytest.mark.asyncio
 async def test_search(es_write_data, redis_client, make_search_request, query_data, expected_answer):
     """We assume that the index is clean."""

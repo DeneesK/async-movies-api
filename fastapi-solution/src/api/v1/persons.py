@@ -32,7 +32,7 @@ async def person_details(person_id: str, person_service: PersonService = Depends
     if not person_lst:
         # Если фильм не найден, отдаём 404 статус
         # Желательно пользоваться уже определёнными HTTP-статусами, которые содержат enum
-                # Такой код будет более поддерживаемым
+        # Такой код будет более поддерживаемым
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='person not found')
     else:
         # We ised id, so there is only one item.
@@ -49,9 +49,9 @@ async def person_details(person_id: str, person_service: PersonService = Depends
             response_description="Id and name"
             )
 async def persons_list(query: str | None = Query(default=None),
-                       sort:list[str]=Query(default=None),
-                       filter:list[str]=Query(default=None),
-                       from_:int=None, page_size=None,
+                       sort: list[str] = Query(default=None),
+                       filter: list[str] = Query(default=None),
+                       from_: int = None, page_size=None,
                        person_service: PersonService = Depends(get_person_service)) -> list:
     """sort must be json-encoded list. An example:
     http://127.0.0.1:8000/api/v1/persons/search/?query=William%20Po&sort=name.raw&sort=...
