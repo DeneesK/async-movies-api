@@ -45,7 +45,8 @@ class PersonService(DBObjectService):
         """
         def to_tuple(arg):
             return None if arg is None else tuple(arg)
-        redis_key = hash((query, to_tuple(sort_fields), to_tuple(filter_items), from_, page_size))
+        redis_key = str((query, to_tuple(sort_fields), to_tuple(filter_items), from_, page_size))
+        print('get_persons_by_query redis_key', (query, to_tuple(sort_fields), to_tuple(filter_items), from_, page_size))
         persons = await self._persons_from_cache(redis_key)
         if persons is None:
             persons = await self._search_persons(query,

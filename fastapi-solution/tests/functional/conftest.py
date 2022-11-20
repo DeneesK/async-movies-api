@@ -4,6 +4,7 @@ import pytest
 import pytest_asyncio
 import aiohttp
 from elasticsearch import AsyncElasticsearch
+from aioredis import Redis
 
 from .settings import test_settings
 from etl.setting import person_index_body, genre_index_body, filmwork_index_body
@@ -20,6 +21,12 @@ async def es_client():
         await client.indices.create('persons', person_index_body)
     if not await client.indices.exists('genres'):
         await client.indices.create('genres', genre_index_body)
+    yield client
+    await client.close()
+
+@pytest_asyncio.fixture
+async def redis_client():
+    client = Redis(host=test_settings.redis_host)
     yield client
     await client.close()
 
