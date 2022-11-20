@@ -1,10 +1,8 @@
 import json
 from http import HTTPStatus
 
-import aiohttp
 import pytest
 
-from ..settings import test_settings
 from .common import make_bulk_query
 
 
@@ -22,29 +20,12 @@ from .common import make_bulk_query
     ]
 )
 @pytest.mark.asyncio
-async def test_film(es_write_data, redis_client, checking_id, expected_answer, make_id_request):
+async def test_film(es_write_data, redis_client, checking_id, expected_answer, make_id_request, es_data_film):
 
     # 1. Генерируем данные для ES
-    film_id = '7e0ad51a-332f-4ff0-b8b9-9b5308836cb1'
-    es_data = [{
-        'id': film_id,
-        'imdb_rating': 9.5,
-        'genre': ['Action', 'Sci-Fi'],
-        'title': 'The Star',
-        'description': 'New World',
-        'director': ['Stan'],
-        'actors_names': ['Ann', 'Bob'],
-        'writers_names': ['Ben', 'Howard'],
-        'actors': [
-            {'id': '111', 'name': 'Ann'},
-            {'id': '222', 'name': 'Bob'}
-        ],
-        'writers': [
-            {'id': '333', 'name': 'Ben'},
-            {'id': '444', 'name': 'Howard'}
-        ],
-    }]
-    bulk_query = make_bulk_query(es_data, 'movies', 'id')
+
+    bulk_query = make_bulk_query(es_data_film, 'movies', 'id')
+
     # 1.1 Записываем данные в ES
 
     await es_write_data(bulk_query)  # , 1, 'movies'
@@ -70,14 +51,18 @@ async def test_film(es_write_data, redis_client, checking_id, expected_answer, m
 @pytest.mark.parametrize(
     'expected_answer',
     [
-        {'raiting': 9.5}
+        {'rating': 9.5}
     ]
 )
 @pytest.mark.asyncio
-async def test_film_sort(expected_answer, make_id_request):
+async def test_film_sort(expected_answer, make_id_request, es_data_film, es_write_data):
+
+    bulk_query = make_bulk_query(es_data_film, 'movies', 'id')
+
+    await es_write_data(bulk_query)
 
     _, body, _ = await make_id_request('/api/v1/films/search/?query=star&sort=imdb_rating',)
 
     result = body[0].get('imdb_rating')  # проверяем первый элмент, первым должен находится фильм с самым высоким рейтингом
 
-    assert result == expected_answer['raiting']
+    assert result == expected_answer['rating']

@@ -103,3 +103,27 @@ def make_id_request(aiohttp_client_session):
             status = response.status
         return status, body, headers
     return inner
+
+
+@pytest_asyncio.fixture
+def es_data_film():
+    film_id = '7e0ad51a-332f-4ff0-b8b9-9b5308836cb1'
+    es_data = [{
+        'id': film_id,
+        'imdb_rating': 9.5,
+        'genre': ['Action', 'Sci-Fi'],
+        'title': 'The Star',
+        'description': 'New World',
+        'director': ['Stan'],
+        'actors_names': ['Ann', 'Bob'],
+        'writers_names': ['Ben', 'Howard'],
+        'actors': [
+            {'id': '111', 'name': 'Ann'},
+            {'id': '222', 'name': 'Bob'}
+        ],
+        'writers': [
+            {'id': '333', 'name': 'Ben'},
+            {'id': '444', 'name': 'Howard'}
+        ],
+    }]
+    return es_data
