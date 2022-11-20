@@ -53,9 +53,6 @@ async def test_search(es_write_data, query_data, redis_client, make_search_reque
 
     # 2. Запрашиваем данные из ES по API
 
-    # session = aiohttp.ClientSession()
-    # url = f'http://{test_settings.service_host}:8000/api/v1/films/search'
-    # async with session.get(url, params=query_data) as response:
     page_size = expected_answer['length']
     for page_num in range(items_count // page_size):
         query_data1 = query_data.copy()
@@ -63,10 +60,7 @@ async def test_search(es_write_data, query_data, redis_client, make_search_reque
         status, body, headers = await make_search_request('/api/v1/films/search', query_data1, expected_answer,
                                                           items_count, from_)
 
-    #    body = await response.json()
-    #    status = response.status
         length = len(body)
-    # await session.close()
 
         # 2. Проверяем ответ
 
@@ -77,7 +71,6 @@ async def test_search(es_write_data, query_data, redis_client, make_search_reque
         redis_key = str((query_data['query'], from_, page_size))
         cache_data_str = await redis_client.get(redis_key)
         if expected_answer['status'] == HTTPStatus.OK:
-            print('cache_data_str', cache_data_str)
             cache_data = json.loads(cache_data_str)
             for cache_item_str, response_item in zip(cache_data, body):
                 cache_item = json.loads(cache_item_str)
