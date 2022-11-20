@@ -9,7 +9,8 @@ from etl_models.film import Filmwork
 from etl_models.genre import Genre
 from etl_models.person import Persons
 
-from setting import filmwork_index_body, genre_index_body, person_index_body, ELK_BASE_URL
+from etl.es_schemes import filmwork_index_body, genre_index_body, person_index_body
+from settings import ELK_BASE_URL
 
 
 class ElkWriter:

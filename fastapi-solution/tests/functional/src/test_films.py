@@ -70,9 +70,6 @@ async def test_film(es_write_data, checking_id, expected_answer):
             {'id': '333', 'name': 'Ben'},
             {'id': '444', 'name': 'Howard'}
         ],
-        # 'created_at': datetime.datetime.now().isoformat(),
-        # 'updated_at': datetime.datetime.now().isoformat(),
-        'film_work_type': 'movie'
     }]
     bulk_query = make_bulk_query(es_data, 'movies', 'id')
     # 1.1 Записываем данные в ES

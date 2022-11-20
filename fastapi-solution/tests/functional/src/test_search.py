@@ -44,9 +44,6 @@ async def test_search(es_write_data, query_data, expected_answer):
             {'id': '333', 'name': 'Ben'},
             {'id': '444', 'name': 'Howard'}
         ],
-        'created_at': datetime.datetime.now().isoformat(),
-        'updated_at': datetime.datetime.now().isoformat(),
-        'film_work_type': 'movie'
     } for _ in range(60)]
 
     # 1.1 Записываем данные в ES

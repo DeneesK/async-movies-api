@@ -13,3 +13,4 @@ RUN pip install --upgrade pip \
 	&& pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+COPY es_schemes.py es_schemes.py
