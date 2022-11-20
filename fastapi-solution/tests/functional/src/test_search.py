@@ -1,9 +1,7 @@
-# import datetime
 import uuid
 import json
 from http import HTTPStatus
 
-# import aiohttp
 import pytest
 
 from .common import make_bulk_query

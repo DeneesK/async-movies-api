@@ -12,7 +12,7 @@ services:
 
   postgres_db:
     env_file:
-      - pg_container.env
+      - pg_container.env.example
     image: postgres:13
     volumes:
       - ./pg_data:/var/lib/postgresql/data

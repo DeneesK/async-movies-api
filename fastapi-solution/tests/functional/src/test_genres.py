@@ -4,8 +4,6 @@ from http import HTTPStatus
 
 import pytest
 
-# from elasticsearch import AsyncElasticsearch
-
 from ..settings import test_settings
 from .common import make_bulk_query, random_string, is_sorted
 
@@ -35,7 +33,6 @@ def get_es_genres_bulk_query(query_data, es_index, es_id_field, items_count):
         )
     ]
 )
-# @pytest.mark.parametrize('es_write_data', [get_es_persons_bulk_query], indirect=True)
 @pytest.mark.asyncio
 async def test_search(es_write_data, redis_client, make_search_request, query_data, expected_answer):
     """We assume that the index is clean."""
@@ -68,6 +65,7 @@ async def test_search(es_write_data, redis_client, make_search_request, query_da
         for cache_item_str, response_item in zip(cache_data, body):
             cache_item = json.loads(cache_item_str)
             assert cache_item == response_item
+
 
 @pytest.mark.parametrize(
     'query_data, expected_answer',
