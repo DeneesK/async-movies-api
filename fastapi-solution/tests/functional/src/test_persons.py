@@ -77,7 +77,7 @@ async def test_search(es_write_data, redis_client, make_search_request, query_da
     ]
 )
 @pytest.mark.asyncio
-async def test_by_id(es_write_data, make_id_request, query_data, expected_answer):
+async def test_by_id(es_write_data, redis_client, make_id_request, query_data, expected_answer):
     items_count = 1
     bulk_query = get_es_persons_bulk_query(query_data, ES_INDEX, test_settings.es_id_field, items_count)
     person_id = json.loads(bulk_query[1])['id']
@@ -94,3 +94,8 @@ async def test_by_id(es_write_data, make_id_request, query_data, expected_answer
     assert status == expected_answer['status']
     assert len(body) == page_size
     assert body['name'] == query_data['search']
+
+    # 5. Checking the cache
+    cache_data_str = await redis_client.get(person_id)
+    cache_data = json.loads(cache_data_str)
+    assert json.loads(cache_data[0]) == body
