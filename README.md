@@ -1,5 +1,10 @@
 #### API Service for flexible search in the database of films and actors, with the ability to rank responses and specify additional parameters.
 
+# To launch project:
+
+- сreate .env files based on env.examples
+- `docker-compose up`
+
 # To run tests:
 
 ### 1. Build service image in fastapi-solution/ run:
