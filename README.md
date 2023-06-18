@@ -5,6 +5,8 @@
 - сreate .env files based on env.examples
 - `docker-compose up`
 
+OpenApi: `http://127.0.0.1:8000/api/openapi#/`
+
 # To run tests:
 
 ### 1. Build service image in fastapi-solution/ run:
